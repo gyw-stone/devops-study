@@ -1,0 +1,20 @@
+# Docker install for linux
+# Doc: stone 1614528231
+#! /bin/bash
+sudo yum remove docker docker-client docker-client-latest docker-common docker-latest \
+     docker-latest-logrotate docker-engine  # Remove old version 
+
+#  安装封装，设置存储库
+sudo yum install -y yum-utils
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+sudo yum install -y docker-ce docker-ce-cli containerd.io
+
+sudo systemctl enable docker
+sudo systemctl start docker
+
+cat << EOF > /etc/docker/daemon.json
+{
+	"registry-mirrors":["http://hub-mirror.c.163.com"]
+}
+EOF
