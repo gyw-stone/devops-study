@@ -1,0 +1,93 @@
+apiVersion: apps/v1  # 版本号，pod资源
+kind: Deployment  # 类型/控制器
+metadata:      # 数据标签，元数据
+ name: nginx-deployment  
+ labels:   # 子标签
+  app: nginx   # 业务容器
+spec: 
+ replicas: 3  # 副本数
+ selector:    # 选择器
+  matchLabels:   # 匹配标签
+   app: nginx     #  对应上面的业务容器
+ template:   # 模板
+  metadata: 
+   labels: 
+    app: nginx
+  spec: 
+   containers:   # 容器
+   - name: nginx   # 对应上面的业务容器
+     image: nginx:1.15.2   # 使用的镜像信息
+	 ports: 
+	 - containerPort: 80   # 容器端口信息
+---
+apiVersion: v1  # 版本号
+kind: Service     # 类型
+metadata:  # 元数据
+ name: nginx-service
+ labels:
+  app: nginx
+spec:
+ type: NodePort  # 端口映射
+ ports: 
+ - port: 80   # 内部端口
+   targetPort: 80  # 映射端口
+ selector:   # 选择器
+  app: nginx   # 选择业务进行发布
+  
+#网络入站出战原则
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+ name: test-network-policy
+ namespace: default
+spec：
+ podSelector:  # 用于定义该网络策略作用的pod范围
+  matchLabels:
+   role: db  # 选择条件
+ policyTypes:  # 网络策略的类型，包括ingress和egress两种，用于设置目标pod的入站和出战的网络限制
+ - Ingress
+ - Egress
+ ingress:  # 定义允许访问目标POd的入站白名单规则，满足from条件的客户端才能访问目标port端口号
+ # 对符合条件的pod进行网络放行，规则包括基于pod的lable,基于pod所在的namespace的label或者客户端的IP范围
+ - from: 
+   - ipBlock:
+      cidir: 172.17.0.0/16
+	  except: 
+	  - 172.17.1.0/24
+   - namespaceSelector:
+     matchLabels:
+	  project: myproject
+   - podSelector:
+     matchLabels:
+	  role: frontend
+   ports: # 允许访问的目标pod监听的端口号
+   - protocol: TCP  # 通信协议方式
+     port: 6379
+   egress: # 出站网络原则的白名单
+# 允许访问的服务器信息，可以基于服务端pod的label,基于服务端pod所在的namespace的label或者服务端IP范围
+   - to:  
+     - ipBlock:
+	    cidir: 10.0.0.0/24
+	 ports:
+	 - protocol: TCP
+	   port: 5978
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
