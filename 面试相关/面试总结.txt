@@ -5,6 +5,7 @@ docker:
 	ENV：设置环境变量
 	RUN：执行命令
 	COPY：复制文件或目录到容器指定路径
+	ADD: 复制文件或目录到容器指定路径
 	EXPOSE：监听端口
 	CMD：执行命令
 	ENDPOINT：执行命令
@@ -18,11 +19,14 @@ docker:
   add可以自动解压
   copy不支持URl作为参数，不能从远程位置下载文件
 4.docker支持什么网络以及有哪些服务器
-  bridge,host,null、container
+  bridge,host,none、container
  桥接、主机、不分配、容器共享网络
 服务器：HTTP,SMTP,POP,IMAP,Telnet,SSH,FTP
 
 docker网络模型：none（封闭式容器），桥接式容器（bridge,default)，joined(联盟式容器)，开放式容器（open)
+
+5. docker run命令和dockerfile 里面的RUN的区别
+   区别就是执行时间不同，dockerfile里面的RUN执行节点是docker build
 mysql:
 5.有几种存储引擎，有什么区别
    常用的有innoDB,MylSAM,MEMORY,ARCHIVE
