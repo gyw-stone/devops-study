@@ -1,6 +1,8 @@
 # Docker install for linux
 # MAINTAINER: stone <1614528231@qq.com>
 #! /bin/bash
+# resolved yum error "another app is currently holding the yum lock;waiting for it to exit"
+rm -f /var/run/yum.pid
 sudo yum remove docker docker-client docker-client-latest docker-common docker-latest \
      docker-latest-logrotate docker-engine  # Remove old version 
 
