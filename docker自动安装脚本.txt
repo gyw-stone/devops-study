@@ -1,24 +1,33 @@
 # Docker install for linux
 # MAINTAINER: stone <1614528231@qq.com>
 #! /bin/bash
-# resolved yum error "another app is currently holding the yum lock;waiting for it to exit"
-rm -f /var/run/yum.pid
-sudo yum remove docker docker-client docker-client-latest docker-common docker-latest \
-     docker-latest-logrotate docker-engine  # Remove old version 
 
-#  °²×°·â×°£¬ÉèÖÃ´æ´¢¿â
-sudo yum install -y yum-utils
-sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+# 获取当前系统版本
+a=`uname -r |awk -F. '{print $1"." $2}'`
+if [ $a -gt 3.10 ]
+then
 
-sudo yum install -y docker-ce docker-ce-cli containerd.io
+	# resolved yum error "another app is currently holding the yum lock;waiting for it to exit"
+	rm -f /var/run/yum.pid
+	sudo yum remove docker docker-client docker-client-latest docker-common docker-latest \
+	     docker-latest-logrotate docker-engine  # Remove 系统残余项
 
-sudo systemctl enable docker
-sudo systemctl start docker
+	#  °²×°·â×°£¬ÉèÖÃ´æ´¢¿â
+	sudo yum install -y yum-utils 
+	sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
-# use 'bash -c' resolved Permission denied
-# or use sudo tee /etc/docker/daemon.json > /dev/null <<EOF EOF is ending label,You can custom
-sudo bash -c "cat > /etc/docker/daemon.json" << EOF
-{
-	"registry-mirrors":["http://hub-mirror.c.163.com"]
-}
-EOF
+	sudo yum install -y docker-ce docker-ce-cli containerd.io
+
+	sudo systemctl enable docker
+	sudo systemctl start docker
+
+	# use 'bash -c' resolved Permission denied
+	# or use sudo tee /etc/docker/daemon.json > /dev/null <<EOF EOF is ending label,You can custom
+	sudo bash -c "cat > /etc/docker/daemon.json" << EOF
+	{
+		"registry-mirrors":["http://hub-mirror.c.163.com"]
+	}
+	EOF
+fi
+	echo "System version is lower.You should have least 3.10"
+
