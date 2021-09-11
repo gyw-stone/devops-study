@@ -1,0 +1,89 @@
+Docker file 基本结构
+基础镜像信息，维护者信息，镜像操作指令和容器启动时执行指令
+
+FROM 
+FROM <image> or FROM <image>:<tag>
+选择镜像版本
+
+MAINTAINER
+维护者信息，MAINTAINER <name> 
+
+RUN
+RUN  <command> or RUN  [“executable”,”param1”,”param2”]
+RUN  <command> 在shell终端运行命令，即/bin/sh -c
+RUN  [“executable”,”param1”,”param2”] 使用exec运行，通常使用其它终端可以通过这种方式实现，例如RUN [“/bin/bash”,”-c”,”echo hello”]
+
+CMD
+CMD [“executable”,”param1”,”param2”] 使用exec执行，推荐使用
+CMD command param1 param2 在/bin/sh中执行，提供给需要交互的应用
+CMD [“param1”,”param2”] 提供给ENTRYPOINT的默认参数
+指定启动容器时执行的命令，每个Dockerfile只能有一条CMD，如果有多条命令，只执行最后一条
+若用户启动容器指定了运行的命令，则会覆盖掉CMD指定的命令
+
+EXPOSE 
+EXPOSE <port>  [<port>…]
+指定docker服务器端口暴露
+
+ENV
+ENV <key> <value> 
+指定一个环境变量，后续会被RUN使用，并在容器运行时保持
+
+ADD
+ADD <src> <dest>
+该命令将复制指定的<src> 到容器中的<dest>。<src>可以是Dockerfile所在目录的一个相对路径；也可以是一个URL；还可以是一个tar文件（自动解压）
+
+COPY
+COPY <src> <dest>
+复制本地主机的<src> (为Dockerfile所在目录的相对路径）到容器中的<dest>
+
+ENTRYPOINT
+ENTRYPOINT [“executable”,”param1”,”param2”]
+ENTRYPOINT command param1 param2（shell中执行）
+配置容器启动后执行的命令，并且不可被docker run 提供的参数覆盖
+每个Dockerfile中只能有一个ENTRYPOINT,当指定多个，最后一个才会起效
+
+VOLUME
+VOLUME  [“/data”]
+创建一个可以从本地主机或其他容器挂载的挂载点，一般用来存放数据库和需要保持的数据等
+
+USER
+USER daemon
+指定运行容器时的用户名或UID,后续的RUN也会使用指定用户
+当服务不需要管理员的权限时，可以通过该命令指定运行用户，并且可以在之前创建所需要的用户
+例如 RUN groupadd -r postgres && useradd -r -g postgres postgres
+
+
+WORKDIR
+WORKDIR  /path/to/workdir
+为后续的RUN,CMD,ENTRYPOINT指令配置工作目录
+
+ONBUILD 
+ONBUILD  [INSTRUCTION]
+配置当所创建的镜像作为其它新创建镜像的基础镜像时，所执行的操作命令
+
+
+
+
+简单介绍：
+FROM # 基础镜像，一切从这里开始 
+MAINTAINER # 镜像是谁写的 
+RUN # 镜像构建是需要运行的命令 
+ADD # 步骤 
+WORKDIR # 镜像的工作目录 
+VOLUME # 挂载的目录 
+EXPOSE # 保留端口配置 
+CMD # 指定这个容器启动时要运行的命令，只有最后一个会生效 ENTRYPOINT # 指定这个容器启动时要运行的命令，可以追加命令 
+COPY # 类似ADD，将文件拷贝到镜像中 
+ENV # 构建时候设置的环境变量
+
+口水话讲解：
+FROM：它的妈妈是谁（基础镜像）
+MAINTAINER：告诉别人谁创造了它（维护者信息）
+RUN：你想让它做啥（命令前面加上RUN）
+ADD：复制文件，自动解压
+WORKDIR：我是cd，今天刚化了妆（当前工作目录）
+VOLUME：给我一个存放行李的地方（目录挂载）
+EXPOSE：我要打开的门是啥（端口）
+
+
+
