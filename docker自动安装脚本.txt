@@ -1,10 +1,10 @@
 # Docker install for linux
-# Doc: stone 1614528231
+# MAINTAINER: stone <1614528231@qq.com>
 #! /bin/bash
 sudo yum remove docker docker-client docker-client-latest docker-common docker-latest \
      docker-latest-logrotate docker-engine  # Remove old version 
 
-#  ��װ��װ�����ô洢��
+#  °²×°·â×°£¬ÉèÖÃ´æ´¢¿â
 sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
@@ -13,7 +13,9 @@ sudo yum install -y docker-ce docker-ce-cli containerd.io
 sudo systemctl enable docker
 sudo systemctl start docker
 
-cat << EOF > /etc/docker/daemon.json
+# use 'bash -c' resolved Permission denied
+# or use sudo tee /etc/docker/daemon.json > /dev/null <<EOF EOF is ending label,You can custom
+sudo bash -c "cat > /etc/docker/daemon.json" << EOF
 {
 	"registry-mirrors":["http://hub-mirror.c.163.com"]
 }
