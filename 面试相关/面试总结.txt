@@ -129,6 +129,33 @@ TCP向上层提供面向连接的可靠服务 ，UDP向上层提供无连接不�
 虽然 UDP 并没有 TCP 传输来的准确，但是也能在很多实时性要求高的地方有所作为
 对数据准确性要求高，速度可以相对较慢的，可以选用TCP
 
+17.k8s有哪些组件
+master: 	apiserver 
+	etcd：Kubernetes提供默认的存储系统，保存所有集群数据 
+	controllers：运行管理的控制器（kube-controller-manager、cloud-controller-manager)
+	scheduler：监视新创建没有分配到Node的Pod，为Pod选择一个Node
+
+node: 	kubelet：主要的节点代理，监视已分配给节点的pod
+	kube-proxy：集群中每个节点上运行的网络代理，维护节点上的网络规则
+	container runtime：运行容器的软件环境
+	fluentd：守护进程
+
+18.etcd存储什么数据
+存储了 k8s 自身资源 、用户自定义的 CRD 以及 k8s 系统的 event 等数据。每种数据的一致性和数据安全性要求不一致，如 event 数据的安全性小于 k8s 自身的资源数据以及 CRD 数据。
+
+19.查看服务器的性能
+
+20.中间件nginx,grafana,zabbix等
+
+21.apache如何分发很多访问
+
+22.docker与k8s的关系
+
+23.三次挥手，四次握手
+
+24.网络
+
+
 
 
 
