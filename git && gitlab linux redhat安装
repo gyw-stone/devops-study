@@ -46,6 +46,11 @@ firewall-cmd --zone=public --add-port=8600/tcp --permanent
 启动服务和组件
 gitlab-ctl reconfigure && gitlab-ctl start
 
+访问http://ip:8600登录gitlab
+默认账号 root
+默认密码 5iveL!fe
+
+
 
 gitlab常用命令
 sudo gitlab-ctl start    # 启动所有 gitlab 组件；
