@@ -191,7 +191,23 @@ ProxyPass / balancer://proxy/ lbmethod=bytraffic  #注意这里以"/"结尾
 （4.服务器响应请求，返回响应数据
 （5.浏览器解析响应内容，进行渲染，呈现给用户
 
-
+26.常用网络排查工具/思路
+DNS
+  dig
+基本网络
+  ping
+  telnet
+  mtr/traceroute
+系统网络
+  dmesg
+  ethtool -S
+  ss -s / ip -s addr
+  Nstat
+网络测试
+  netcat/socat （socat 很强大，请务必学习）
+  netperf
+抓包
+  tcpdump/tshark
 
 
 
