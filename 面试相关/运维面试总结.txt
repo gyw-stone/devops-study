@@ -1,1 +1,0 @@
-运维可能涉及的工作：日志代码 python 监控部署 事件单  脚本开发 ansible playbook剧本 堡垒机 EFK/fluentd
