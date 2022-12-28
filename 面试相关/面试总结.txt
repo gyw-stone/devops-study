@@ -209,6 +209,15 @@ DNS
 抓包
   tcpdump/tshark
 
+27.常用网络管理工具
+ethtool 网卡硬件管理
+查看网卡状态
+修改网卡参数
+查看网卡统计数据
+iftop/nethogs/ntop
+查看网络流量和状态
+nstat / ss -s / ip -s addr
+查看网络链接状态
 
 
 
