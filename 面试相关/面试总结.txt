@@ -18,12 +18,12 @@ docker:
 3.copy add的区别
   add可以自动解压
   copy不支持URl作为参数，不能从远程位置下载文件
+  
 4.docker支持什么网络以及有哪些服务器
-  bridge,host,none、container
+  bridge,host,none
  桥接、主机、不分配、容器共享网络
 服务器：HTTP,SMTP,POP,IMAP,Telnet,SSH,FTP
 
-docker网络模型：none（封闭式容器），桥接式容器（bridge,default)，joined(联盟式容器)，开放式容器（open)
 
 5. docker run命令和dockerfile 里面的RUN的区别
    区别就是执行时间不同，dockerfile里面的RUN执行节点是docker build
@@ -51,11 +51,13 @@ Linux：
 7.执行程序遇到权限问题分析原因
   用户权限问题，这种情况需要看使用用户是否是指定运行程序的用户，若是，则赋予x权限，
 若不是赋予相应的执行权限，比如直接配置用户权限，或者加入到有相应权限的用户组中
+
 8.shell 支持几种数据类型
  字符串
  整型
  数组
 元组
+
 9.网络服务有哪些
   web
  ftp
