@@ -70,7 +70,7 @@ merge后分支还在
 rebase后分支不存在
 
 11.git与svn的区别
--1 git是分布式的，svn是集中式
+-1 git是分布式，svn是集中式
 -2 git按原数据方式存储，svn按文件
 -3 git没有一个全局版本号，svn有
 -4 git的内容的完整性优于svn,git内存存储采取的是SHA-1哈希算法
@@ -141,13 +141,36 @@ node: 	kubelet：主要的节点代理，监视已分配给节点的pod
 	fluentd：守护进程
 
 18.etcd存储什么数据
-存储了 k8s 自身资源 、用户自定义的 CRD 以及 k8s 系统的 event 等数据。每种数据的一致性和数据安全性要求不一致，如 event 数据的安全性小于 k8s 自身的资源数据以及 CRD 数据。
+存储了k8s自身资源、用户自定义的CRD以及k8s系统的event等数据。每种数据的一致性和数据安全性要求不一致，如event数据的安全性小于k8s自身的资源数据以及CRD数据。
 
 19.查看服务器的性能
-
+netstat
+ss
+top
+free
+lsof
 20.中间件nginx,grafana,zabbix等
 
 21.apache如何分发很多访问
+负载均衡策略分发，编辑httpd.conf修改配置
+1）轮询均衡策略
+ProxyPass / balancer://proxy/         #注意这里以"/"结尾
+<Proxy balancer://proxy> 
+       BalancerMember http://192.168.6.37:6888/ 
+       BalancerMember http://192.168.6.38:6888/
+</Proxy> 
+2）按权重分配均衡策略
+ProxyPass / balancer://proxy/         #注意这里以"/"结尾
+<Proxy balancer://proxy> 
+        BalancerMember http://192.168.6.37:6888/  loadfactor=3 
+        BalancerMember http://192.168.6.38:6888/  loadfactor=1
+</Proxy> 
+3）权重请求响应负载均衡策略
+ProxyPass / balancer://proxy/ lbmethod=bytraffic  #注意这里以"/"结尾
+<Proxy balancer://proxy> 
+         BalancerMember http://192.168.6.37:6888/  loadfactor=3 
+         BalancerMember http://192.168.6.38:6888/  loadfactor=1 
+ </Proxy> 
 
 22.docker与k8s的关系
 
@@ -155,11 +178,11 @@ node: 	kubelet：主要的节点代理，监视已分配给节点的pod
 四次：连接建立，连接确认，发请求，对象回来
 三次：请求，通过请求并发送确认，确认后回复
 
-24.网络
+24.mysql主从同步原理
+主库开启binlog日志，主从库配置不同的server-id
+原理是：主要通过binlog日志实现，主库生成binlog日志，从库请求读取日志，主库启动一个线程发送binlog日志，从库i/o线程加载binlog日志到relay log，sql线程读取日志并复写在机器上
 
-25.mysql主从同步流程
-
-26.浏览器输入URL返回页面过程？
+25.浏览器输入URL返回页面过程？
 （1.解析域名，找到主机IP
 （2.浏览器利用IP直接与网站主机通信，三次握手，建立TCP连接，浏览器会以一个随机端口向服务端的web程序80端口发起TCP的连接
 （3.建立TCP连接后，浏览器向主机发起一个HTTP请求
