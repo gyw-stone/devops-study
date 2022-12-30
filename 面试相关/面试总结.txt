@@ -221,9 +221,9 @@ iftop/nethogs/ntop
 nstat / ss -s / ip -s addr
 查看网络链接状态
 
-
-
-
+28.ansible salt 对比（自悟版）
+salt 传输速度更快
+ansible ssh加密性高
 
 
 
