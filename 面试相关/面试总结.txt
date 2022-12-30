@@ -16,17 +16,17 @@ docker:
   endpoint 类似CMD，但不会被docker run的命令行参数指定的指令所覆盖
 
 3.copy add的区别
-  add可以自动解压
-  copy不支持URl作为参数，不能从远程位置下载文件
+  add可以自动解压，支持从远程url下载资源
+  copy不支持从远程url下载资源
   
 4.docker支持什么网络以及有哪些服务器
   bridge,host,none
- 桥接、主机、不分配、容器共享网络
+ 桥接、主机、不分配
 服务器：HTTP,SMTP,POP,IMAP,Telnet,SSH,FTP
 
-
 5. docker run命令和dockerfile 里面的RUN的区别
-   区别就是执行时间不同，dockerfile里面的RUN执行节点是docker build
+   区别就是执行时间不同，dockerfile里面的RUN执行节点是镜像创建阶段，docker run是镜像启动容器阶段
+   
 mysql:
 5.有几种存储引擎，有什么区别
    常用的有innoDB,MylSAM,MEMORY,ARCHIVE
@@ -59,13 +59,9 @@ Linux：
 元组
 
 9.网络服务有哪些
-  web
- ftp
- samba
-nfs
-dns
-mail
-http
+  独立服务和超级服务
+  独立服务：http,ftp,ssh
+  超级服务: telnet
 
 10.rebase和merge的区别
 merge后分支还在
