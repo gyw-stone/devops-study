@@ -153,7 +153,16 @@ node: 	kubelet：主要的节点代理，监视已分配给节点的pod
 4）DHCP
 原理：是一个局域网的网络协议，使用UDP协议工作；是网络管理员能集中管理和自动分配IP网络地址的协议
 
-20.中间件nginx,grafana,zabbix等
+20.sed，grep，awk
+grep 主要是过滤功能
+  -v 忽略匹配行
+  -i 忽略大小写
+  -n 显示查找到的行号
+  -E egrep，支持正则匹配
+sed 主要是修改文本
+  sed -i 's/a/b/g' path
+awk 主要是处理文本
+  awk -F ':' ‘{print $1,$2}’ path
 
 21.apache如何分发很多访问
 负载均衡策略分发，编辑httpd.conf修改配置
