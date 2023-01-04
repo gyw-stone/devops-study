@@ -113,3 +113,15 @@ curl -O https://docs.projecctcalico.org/manifests/calico.yaml
 # 应用yaml文件
 kubectl apply -f calico.yaml
 
+
+常见安装问题：
+1.[ERROR CRI]: container runtime is not running: output: E0104 20:26:38.965835   25579 remote_runtime.go:948] "Status from runtime service failed"
+err="rpc error: code = Unimplemented desc = unknown service runtime.v1alpha2.RuntimeService"
+解决方法：
+	rm -rf /etc/containerd/config.toml
+	systemctl restart containerd
+2.The connection to the server localhost:8080 was refused - did you specify the right host or port?
+解决方法：
+	将主节点中的【/etc/kubernetes/admin.conf】文件拷贝到从节点/etc/kubernetes/目录下
+	echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bash_profile
+	source ~/.bash_profile
