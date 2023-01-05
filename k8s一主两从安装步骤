@@ -100,6 +100,9 @@ kubeadm join 192.168.5.3:6443 --token 1nt23g.u539jghww6u1ik5c \
 ”“”
 kubeadm config print init-defaults > kubeadm.yaml
 修改地址为本机地址
+再serviceSubnet: 10.96.0.0/12下面添加
+      podSubnet: 10.244.0.0/16
+
 kubeadm init --config kubeadm.yaml 
 ## kubeadm init --kubernetes-version=1.26.0 --apiserver-advertise-address=192.168.5.3 --pod-network-cidr=192.168.122.0/24
 
