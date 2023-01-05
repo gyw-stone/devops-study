@@ -98,7 +98,10 @@ chmod +x images.sh
 kubeadm join 192.168.5.3:6443 --token 1nt23g.u539jghww6u1ik5c \
 	--discovery-token-ca-cert-hash sha256:145aa82cda51b41c6875eb69df34a2f72a37cc8324575948b4eca8055e063c08 ）
 ”“”
-kubeadm init --kubernetes-version=1.26.0 --apiserver-advertise-address=192.168.5.3 --pod-network-cidr=192.168.122.0/24
+kubeadm config print init-defaults > kubeadm.yaml
+修改地址为本机地址
+kubeadm init --config kubeadm.yaml 
+## kubeadm init --kubernetes-version=1.26.0 --apiserver-advertise-address=192.168.5.3 --pod-network-cidr=192.168.122.0/24
 
 # 执行集群初始化生成的创建目录和复制配置文件命令，类似（
   mkdir -p $HOME/.kube
@@ -113,6 +116,10 @@ curl -O https://docs.projecctcalico.org/manifests/calico.yaml
 # 应用yaml文件
 kubectl apply -f calico.yaml
 
+# 安装flannel网络插件 和上面选其一
+wget https://raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml
+
+kubectl apply -f flannel.yml
 
 常见安装问题：
 1.[ERROR CRI]: container runtime is not running: output: E0104 20:26:38.965835   25579 remote_runtime.go:948] "Status from runtime service failed"
@@ -123,5 +130,12 @@ err="rpc error: code = Unimplemented desc = unknown service runtime.v1alpha2.Run
 2.The connection to the server localhost:8080 was refused - did you specify the right host or port?
 解决方法：
 	将主节点中的【/etc/kubernetes/admin.conf】文件拷贝到从节点/etc/kubernetes/目录下
+	scp master01:/etc/kubernetes/admin.conf /etc/kubernetes/
 	echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bash_profile
 	source ~/.bash_profile
+3.k8s join 集群报错之error execution phase kubelet-start: error uploading crisocket:
+	swapoff -a
+	kubeadm reset
+	rm /etc/cni/net/* -f
+	systemctl daemon-reload
+	systemctl restart kubelet
