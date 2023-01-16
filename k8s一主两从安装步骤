@@ -142,3 +142,7 @@ err="rpc error: code = Unimplemented desc = unknown service runtime.v1alpha2.Run
 	rm /etc/cni/net/* -f
 	systemctl daemon-reload
 	systemctl restart kubelet
+
+防火墙问题
+Get "https://192.168.5.4:10250/containerLogs/default/my-nginx-777c4c4d54-4gcsw/my-nginx?follow=true": dial tcp 192.168.5.4:10250: connect: no route to host
+检查防火墙是否关闭
