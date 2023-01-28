@@ -1,0 +1,101 @@
+配置/etc/ansible/hosts
+  1.INI
+    mail.example.com
+
+    [webservers]
+    foo.example.com
+    bar.example.com
+
+    [dbservers]
+    one.example.com
+    two.example.com
+    three.example.com
+  2.yaml
+  all:
+  hosts:
+    mail.example.com:
+  children:
+    webservers:
+      hosts:
+        foo.example.com:
+        bar.example.com:
+    dbservers:
+      hosts:
+        one.example.com:
+        two.example.com:
+        three.example.com:
+
+配置文件配置主机参数
+ansible_port 
+ansible_user
+ansible_password
+ansible_host
+
+命令格式
+ansible <pattern> -m <module_name> -a "<module options>"
+
+常用modules
+copy
+yum
+command
+shell
+cron
+service
+file
+stat
+handlers
+ping
+user
+group
+script 执行主控端脚本
+unarchive 解压
+archive 压缩
+hostname
+lineinfile 类似于sed
+setup 收集信息
+
+方案1
+前提ssh完成了指纹确认
+一键分发公钥，实现批量免密登录，再ansible免密远程执行命令
+方案2
+手动ssh连接，确认指纹，再ansible远程操作，选择认证方式
+方案3
+主机清单文件中取消指纹确认，修改配置文件，修改参数为host_key_checking=False
+
+
+- hosts: server-1 # 主机名
+  user: root # 用户
+  tasks: 
+  - name: playbook_test  # 任务名
+    file: state=touch  path=/mnt/test.txt # 选择file模块，创建test.txt文件
+    notify: test playbook_test
+  handlers:
+  - name: test playbook_test # 和notify一致
+    shell： echo "123" >> /mnt/test.txt # 调用shell模块
+
+ansible-playbook --syntax-check test.yml # 检查yml格式
+ansible-palybook test.yml # 执行playbook剧本
+
+anisble 剧本一般是字典+列表格式
+
+- hosts: webserver1
+  user: root
+  tasks: 
+  - name: install packages
+    yum: name={{ item }} state=latest # 相当于for循环中的i，固定为item
+    with_items:   # 取值
+    - httpd
+    - php
+    - php-mysql
+    - php-mbstring
+
+
+ role角色，在ansible中playbooks的目录结构
+ role_name/: 角色的名称
+ files/: 存储由copy或script等模块调用的文件
+ tasks/: 存储任务的目录
+ handlers/： 条件。前一个任务执行成功去执行下面的 处理特定事物的文件
+ vars/: 变量 定义变量的条件
+ templates/: 模板 使用变量的文件存储由template模块调用的模版文件
+ meta/: 定义当前角色的特殊设定
+ default/: 设定默认变量
