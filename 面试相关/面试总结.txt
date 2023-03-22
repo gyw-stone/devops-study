@@ -20,8 +20,7 @@ docker:
   copy不支持从远程url下载资源
   
 4.docker支持什么网络以及有哪些服务器
-  bridge,host,none
- 桥接、主机、不分配
+  bridge,host,none，container
 服务器：HTTP,SMTP,POP,IMAP,Telnet,SSH,FTP
 
 5. docker run命令和dockerfile 里面的RUN的区别
@@ -32,9 +31,7 @@ mysql:
    常用的有innoDB,MylSAM,MEMORY,ARCHIVE
   innoDB：支持事务，支持行级锁，支持外键，支持崩溃修复能力和并发控制
   MylSAM：不支持事务，不支持行级锁，只支持并发插入的表锁
-  MEMORY：文件和数据都存储在内存中，安全性低
-  ARCHIVE：支持高并发的插入，不支持索引
-
+ v 
 6.有几种索引 
   FULLTEXT：全文索引，只MylSAM支持
   hash：哈希索引
