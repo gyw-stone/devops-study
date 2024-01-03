@@ -1,6 +1,6 @@
 git安装
 yum -y install git (centos7) 
-dnf -y install git (centos8)
+dnf -y install git (rocky)
 
 配置git用户 
 git config --global user.name "test"
