@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ch-keeper
+  namespace: clickhouse
+  labels:
+    app: clickhouse-keeper
+spec:
+  clusterIP: None  # 创建无头服务 (Headless Service)
+  ports:
+  - name: keeper-client
+    port: 9181
+    targetPort: 9181
+  - name: keeper-raft
+    port: 9234
+    targetPort: 9234
+  selector:
+    app: clickhouse-keeper
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ch-keeper
+  namespace: clickhouse
+spec:
+  serviceName: ch-keeper
+  replicas: 3
+  selector:
+    matchLabels:
+      app: clickhouse-keeper
+  template:
+    metadata:
+      labels:
+        app: clickhouse-keeper
+    spec:
+      volumes:
+        - name: config-template
+          configMap:
+            name: clickhouse-keeper-config
+        - name: config-volume
+          emptyDir: {}
+      initContainers: 
+        - name: config-renderer ## 实现变量到不同pod的config
+          image: busybox:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              POD_INDEX="${HOSTNAME##*-}"
+              case "$POD_INDEX" in
+                  ''|*[!0-9]*) echo "Error: Invalid POD_INDEX: $POD_INDEX"; exit 1 ;;
+              esac
+              echo "Rendering config for server_id: $POD_INDEX"
+              sed "s/\${server_id}/$POD_INDEX/g" /etc/config-template/keeper-config.xml > /etc/clickhouse-keeper/keeper_config.xml
+          volumeMounts:
+            - name: config-template
+              mountPath: /etc/config-template
+            - name: config-volume
+              mountPath: /etc/clickhouse-keeper
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+      containers:
+        - name: clickhouse-keeper
+          image: clickhouse/clickhouse-keeper:25.7
+          securityContext:
+            runAsUser: 0    # root 用户的 UID
+            runAsGroup: 0   # root 组的 GID
+            privileged: true # 如果需要额外的特权
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/clickhouse-keeper
+          ports:
+            - containerPort: 9181
+            - containerPort: 9234

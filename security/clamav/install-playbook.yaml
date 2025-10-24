@@ -1,0 +1,58 @@
+- name: 安装和配置 ClamAV 每周扫描
+  hosts: all
+  become: yes
+  vars:
+    scan_script: "/etc/cron.weekly/fullscan"
+    freshclam_service_name: "{{ 'clamav-freshclam' if ansible_os_family == 'Debian' else 'freshclam' }}"
+    cron_service_name: "{{ 'cron' if ansible_os_family == 'Debian' else 'crond' }}"
+
+  tasks:
+    - name: 收集已安装包信息
+      package_facts:
+
+    - name: 安装 ClamAV 和 Freshclam（如未安装）
+      package:
+        name: "{{ ['clamav','clamav-freshclam'] if ansible_os_family == 'Debian' else ['clamav','clamav-update'] }}"
+        state: present
+      when: not (('clamav' in ansible_facts.packages) and ('clamav-freshclam' in ansible_facts.packages))
+
+    - name: 安装 cron（如未安装）
+      package:
+        name: "{{ 'cron' if ansible_os_family == 'Debian' else 'cronie' }}"
+        state: present
+      when: not (('cron' in ansible_facts.packages) or ('cronie' in ansible_facts.packages))
+
+    - name: 启动并启用 cron 服务
+      systemd:
+        name: "{{ cron_service_name }}"
+        state: started
+        enabled: yes
+
+    - name: 启动并启用 freshclam 服务（如可用）
+      systemd:
+        name: "{{ freshclam_service_name }}"
+        state: started
+        enabled: yes
+      ignore_errors: yes
+      
+    - name: 创建扫描脚本
+      copy:
+        dest: "{{ scan_script }}"
+        mode: 0755
+        content: |
+          #!/bin/bash
+          LOG_FILE="/var/log/clamav_scan_$(date +%Y%m%d).log"
+          /usr/bin/nice -n 19 /usr/bin/ionice -c 3 /usr/bin/clamscan -r / -i -l $LOG_FILE \
+            --exclude-dir=/sys \
+            --exclude-dir=/proc \
+            --exclude-dir=/dev \
+            --exclude-dir=/run \
+            --exclude-dir="^/var/lib/docker" \
+            --exclude-dir="^/var/lib/kubelet" \
+            --exclude-dir="^/var/lib/containers" \
+            --exclude="\.(mp4|avi|mkv|mov|flv|wmv|mp3|flac|wav|ogg|jpg|jpeg|png|gif|bmp|iso|img|tar\.gz|tar\.bz2)$" \
+            --max-filesize=50M \
+            --max-scansize=100M \
+            --scan-elf=yes \
+            --scan-ole2=yes
+          find "/var/log/" -name "clamav_scan_*.log" -mtime +30 -delete

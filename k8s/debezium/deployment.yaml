@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-connector-config
+  namespace: debezium
+data:
+  mysql-connector.json: |
+    {
+      "name": "cwallet-db-connector",
+      "config": {
+        "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+        "tasks.max": "1",  
+        "database.hostname": "cctip-database.cwb4dfaq38cg.ap-northeast-1.rds.amazonaws.com",  
+        "database.port": "3306",
+        "database.user": "debezium",
+        "database.password": "'"$MYSQL_PASSWORD"'",
+        "database.server.id": "184054",  
+        "topic.prefix": "cwallet",  
+        "database.include.list": "cctip-db-account",  
+        "schema.history.internal.kafka.bootstrap.servers": "kafka.middleware.svc.cluster.local:9092",  
+        "schema.history.internal.kafka.topic": "schema-changes.cwallet",
+        "decimal.handling.mode": "string",
+        "signal.kafka.topic": "debezium-signals",
+        "signal.kafka.bootstrap.servers": "kafka.middleware.svc.cluster.local:9092",
+        "incremental.snapshot.chunk.size": "1024",
+        "snapshot.mode": "no_data",
+        "signal.enabled.channels": "source,kafka",
+        "table.include.list": "cctip-db-account.cctip-user-assets,cctip-db-account.cctip-user-assets-flows",
+        "signal.data.collection": "cctip-db-account.debezium_signals",
+        "snapshot.locking.mode": "none",
+        "errors.tolerance": "all",
+        "errors.log.enable": "true",
+        "errors.deadletterqueue.topic.name": "dlq.cwallet",
+        "errors.deadletterqueue.context.headers.enable": "true"    
+      }
+    }
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: debezium
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: debezium
+type: Opaque
+data:
+  MYSQL_USER: ZGViZXppdW0=
+  MYSQL_PASSWORD: "dkg1M01TWnZvNzB2Q0xkU1ozNDJVZGdZaWJ1Q1g4RHI="
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: debezium-connect
+  namespace: debezium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: debezium-connect
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: debezium-connect
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: eks.amazonaws.com/nodegroup
+                    operator: In
+                    values:
+                      - InfrastructureGroup
+      containers:
+        - env:
+            - name: BOOTSTRAP_SERVERS
+              value: kafka.middleware.svc.cluster.local:9092
+            - name: GROUP_ID
+              value: '1'
+            - name: CONFIG_STORAGE_TOPIC
+              value: cwallet_connect_configs
+            - name: OFFSET_STORAGE_TOPIC
+              value: cwallet_connect_offsets
+            - name: STATUS_STORAGE_TOPIC
+              value: cwallet_connect_statuses
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  key: MYSQL_USER
+                  name: mysql-secret
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: MYSQL_PASSWORD
+                  name: mysql-secret
+          image: quay.io/debezium/connect:3.2
+          imagePullPolicy: IfNotPresent
+          name: connect
+          ports:
+            - containerPort: 8083
+              protocol: TCP
+          resources: {}
+          volumeMounts:
+            - mountPath: /kafka/connectors
+              name: connector-config
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: mysql-connector-config
+          name: connector-config

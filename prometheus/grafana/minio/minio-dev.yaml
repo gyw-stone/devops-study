@@ -1,0 +1,52 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-pvc
+  namespace: vm
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: efs
+  resources:
+    requests:
+      storage: 30Gi
+--- 
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: minio
+  name: minio
+  namespace: vm 
+spec:
+  containers:
+  - name: minio
+    image: quay.io/minio/minio:latest
+    command:
+    - /bin/bash
+    - -c
+    args: 
+    - minio server /data --console-address :9090
+    volumeMounts:
+    - mountPath: /data
+      name: minio-pvc # Corresponds to the `spec.volumes` Persistent Volume
+  volumes:
+  - name: minio-pvc
+    persistentVolumeClaim: 
+      claimName: minio-pvc
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  namespace: vm
+  name: minio
+spec: 
+  ports: 
+    - port: 9000
+      protocol: TCP
+      name: http
+      targetPort: 9000
+  selector: 
+    app: minio
+  type: ClusterIP

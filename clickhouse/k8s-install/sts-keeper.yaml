@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ch-keeper
+  namespace: clickhouse
+spec:
+  serviceName: ch-keeper
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ch-keeper
+  template:
+    metadata:
+      labels:
+        app: ch-keeper
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: eks.amazonaws.com/nodegroup
+                    operator: In
+                    values:
+                      - ApplicationGroup
+      containers:
+      - name: clickhouse-keeper
+        image: clickhouse/clickhouse-keeper:25.7
+        ports:
+        - containerPort: 9181
+          name: client
+        - containerPort: 9234
+          name: raft
+        livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "nc -z -w 3 127.0.0.1 9181 || exit 1"  # 检查本地回环地址的9181端口
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 5
+        readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "nc -z -w 3 127.0.0.1 9181 || exit 1"  # 检查本地回环地址的9181端口
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 3
+            timeoutSeconds: 5
+        volumeMounts:
+        - name: config
+          mountPath: /etc/clickhouse-keeper
+        - name: keeper-data
+          mountPath: /var/lib/clickhouse
+  volumeClaimTemplates:
+  - metadata:
+      name: keeper-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: managed-nfs-storage
+      resources:
+        requests:
+          storage: 1Gi

@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+  namespace: logger
+data:
+  filebeat.yml: |
+    filebeat.inputs:
+    - type: filestream
+      paths:
+        - /app/log/service.log
+      tail_files: true
+      ignore_older: 24h
+      harvester_limit: 1000
+      fields:
+        app-namespace: '${appNamespace}'
+        app-name: '${appName}'
+        app-ip: '${appIp}'
+      fields_under_root: true  
+      #parsers:
+      #- multiline:
+      #    type: pattern
+      #    pattern: '^\d{4}-\d{2}-\d{2}' 
+      #    negate: true
+      #    match: after
+
+    processors:
+    - decode_json_fields:
+        fields: ["message"]
+        target: ""
+        overwrite_keys: true
+     #   add_error_key: true
+    - drop_fields:
+        fields: ["agent.type", "agent.version","agent.hostname","agent.ephemeral_id","agent.id","log.file.path","input.type","ecs.version","agent.name","msg","time","caller","module","service.id","service.name","service.version","span.id","ts"]
+        ignore_missing: true
+
+    output.logstash:
+      hosts: ["172.31.13.249:5044"]
+      bulk_max_size: 100
+      ssl.enabled: false
+      worker: 2  # 提升并发
+      codec.json:
+        pretty: false
+      keep_alive: 30s
+
+    # 新增：资源优化配置
+    queue:
+      mem:
+        events: 1024
+        flush.min_events: 128
+    logging.level: info

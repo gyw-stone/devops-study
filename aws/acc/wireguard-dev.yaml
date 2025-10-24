@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create AWS Global Accelerator with Listener and Endpoint Group
+Parameters:
+  AcceleratorName:
+    Type: String
+    Description: Name of Global Accelerator
+
+Resources:
+  MyAccelerator:
+    Type: AWS::GlobalAccelerator::Accelerator
+    Properties:
+      Name: !Ref AcceleratorName
+      Enabled: true
+      IpAddressType: IPV4
+
+
+  MyListener:
+    Type: AWS::GlobalAccelerator::Listener
+    Properties:
+      AcceleratorArn: !Ref MyAccelerator
+      Protocol: UDP
+      PortRanges:
+        - FromPort: 443
+          ToPort: 443
+        - FromPort: 445
+          ToPort: 445
+        - FromPort: 446
+          ToPort: 446
+        - FromPort: 447
+          ToPort: 447
+        - FromPort: 448
+          ToPort: 448
+        - FromPort: 449
+          ToPort: 449
+      ClientAffinity: NONE
+
+  MyEndpointGroup:
+    Type: AWS::GlobalAccelerator::EndpointGroup
+    Properties:
+      ListenerArn: !Ref MyListener
+      EndpointGroupRegion: ap-northeast-1
+      HealthCheckProtocol: TCP
+      HealthCheckPort: 10001
+      EndpointConfigurations:
+        - EndpointId: i-09b3c31612a36236e ## instance-id
+          Weight: 100
+      TrafficDialPercentage: 100
+
+Outputs:
+  AcceleratorDNS:
+    Description: "Global Accelerator DNS name"
+    Value: !GetAtt MyAccelerator.DnsName

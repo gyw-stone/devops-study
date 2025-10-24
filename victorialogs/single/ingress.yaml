@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: internet-nginx
+    nginx.ingress.kubernetes.io/use-forwarded-headers: 'true'
+  name: grafana-ingress
+  namespace: vm
+spec: 
+  rules: 
+    - host: grafana-infrastructure.agentstudio.site
+      http:
+        paths: 
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: vm-logs
+                port:
+                  number: 9428

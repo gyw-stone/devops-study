@@ -1,0 +1,193 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFront Distribution based on existing configuration
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: Origin domain name (e.g., 1.ap-northeast-1.amazonaws.com)
+  CertificateArn:
+    Type: String
+    Description: ACM certificate ARN for HTTPS support
+  AliasDomain:
+    Type: String
+    Description: Alias domain name (e.g., cwallet.in)
+
+Resources:
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        CallerReference: !Sub "stack-${AWS::StackName}-${AWS::Region}"
+        Aliases:
+          Quantity: 1
+          Items:
+            - cwallet.id
+        Origins:
+          - Id: k8s-cctipngi-cctipngi-0e85a52c0e-5501c1a91f1f56aa.elb.ap-northeast-1.amazonaws.com-mdh3a2ljd8n
+            DomainName: k8s-cctipngi-cctipngi-0e85a52c0e-5501c1a91f1f56aa.elb.ap-northeast-1.amazonaws.com
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: http-only
+              OriginSslProtocols:
+                - SSLv3
+                - TLSv1
+                - TLSv1.1
+                - TLSv1.2
+              OriginReadTimeout: 30
+              OriginKeepaliveTimeout: 5
+
+          
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+            - PUT
+            - PATCH
+            - POST
+            - DELETE
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
+          TargetOriginId: k8s-cctipngi-cctipngi-0e85a52c0e-5501c1a91f1f56aa.elb.ap-northeast-1.amazonaws.com-mdh3a2ljd8n
+          ViewerProtocolPolicy: redirect-to-https
+        CacheBehaviors:
+          - PathPattern: '/cctip/v1/twitter/tip/detail'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
+            CachedMethods:
+              - GET
+              - HEAD
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
+            TargetOriginId: k8s-cctipngi-cctipngi-0e85a52c0e-5501c1a91f1f56aa.elb.ap-northeast-1.amazonaws.com-mdh3a2ljd8n
+            ViewerProtocolPolicy: redirect-to-https
+          - PathPattern: '/cctip/v1/*'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
+            CachedMethods:
+              - GET
+              - HEAD
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
+            TargetOriginId: k8s-cctipngi-cctipngi-0e85a52c0e-5501c1a91f1f56aa.elb.ap-northeast-1.amazonaws.com-mdh3a2ljd8n
+            ViewerProtocolPolicy: redirect-to-https
+          - PathPattern: '/v1/*'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
+            CachedMethods:
+              - GET
+              - HEAD
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
+            TargetOriginId: k8s-cctipngi-cctipngi-0e85a52c0e-5501c1a91f1f56aa.elb.ap-northeast-1.amazonaws.com-mdh3a2ljd8n
+            ViewerProtocolPolicy: redirect-to-https
+          - PathPattern: '/api/v1/*'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
+            CachedMethods:
+              - GET
+              - HEAD
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
+            TargetOriginId: k8s-cctipngi-cctipngi-0e85a52c0e-5501c1a91f1f56aa.elb.ap-northeast-1.amazonaws.com-mdh3a2ljd8n
+            ViewerProtocolPolicy: redirect-to-https
+          - PathPattern: '/cctip/v1/ln/pay/*'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
+            CachedMethods:
+              - GET
+              - HEAD
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
+            TargetOriginId: k8s-cctipngi-cctipngi-0e85a52c0e-5501c1a91f1f56aa.elb.ap-northeast-1.amazonaws.com-mdh3a2ljd8n
+            ViewerProtocolPolicy: redirect-to-https
+          - PathPattern: '/cctip/v1/download/*'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
+            CachedMethods:
+              - GET
+              - HEAD
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
+            TargetOriginId: k8s-cctipngi-cctipngi-0e85a52c0e-5501c1a91f1f56aa.elb.ap-northeast-1.amazonaws.com-mdh3a2ljd8n
+            ViewerProtocolPolicy: redirect-to-https
+          - PathPattern: '/api/*'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
+            CachedMethods:
+              - GET
+              - HEAD
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
+            TargetOriginId: k8s-cctipngi-cctipngi-0e85a52c0e-5501c1a91f1f56aa.elb.ap-northeast-1.amazonaws.com-mdh3a2ljd8n
+            ViewerProtocolPolicy: redirect-to-https
+
+        Comment: cwallet.id
+        PriceClass: PriceClass_All
+        Enabled: true
+        ViewerCertificate:
+          ACMCertificateArn: arn:aws:acm:us-east-1:249539173837:certificate/62166918-f4da-483d-9292-08eca5a3af65
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: blacklist
+            Quantity: 1
+            Items:
+              - CN
+        HttpVersion: http2
+        IsIPV6Enabled: true

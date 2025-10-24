@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ch-server
+  namespace: clickhouse
+spec:
+  serviceName: ch-server
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ch-server
+  template:
+    metadata:
+      labels:
+        app: ch-server
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: eks.amazonaws.com/nodegroup
+                    operator: In
+                    values:
+                      - ApplicationGroup
+      containers:
+      - name: clickhouse
+        image: clickhouse/clickhouse-server:25.7
+        ports:
+        - containerPort: 8123
+          name: http
+        - containerPort: 9000
+          name: native
+       # livenessProbe:
+       #   failureThreshold: 3
+       #   initialDelaySeconds: 5
+       #   periodSeconds: 5
+       #   successThreshold: 1
+       #   tcpSocket:
+       #     port: 9000
+       #   timeoutSeconds: 5
+       # readinessProbe:
+       #   failureThreshold: 3
+       #   initialDelaySeconds: 5
+       #   periodSeconds: 5
+       #   successThreshold: 1
+       #   tcpSocket:
+       #     port: 9000
+       #   timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: '2'
+            memory: 2000Mi
+          requests:
+            cpu: 400m
+            memory: 500Mi
+        volumeMounts:
+        - name: ch-config
+          mountPath: /etc/clickhouse-server
+        - name: ch-data
+          mountPath: /var/lib/clickhouse
+        - name: server-log
+          mountPath: /var/log/clickhouse-server
+  volumeClaimTemplates:
+  - metadata:
+      name: ch-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 200Gi
+  - metadata:
+      name: ch-config
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+  - metadata:
+      name: server-log
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi

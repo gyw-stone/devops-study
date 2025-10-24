@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ch-server
+  namespace: clickhouse
+spec:
+  serviceName: ch-server
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ch-server
+  template:
+    metadata:
+      labels:
+        app: ch-server
+    spec:
+      initContainers:
+      - name: init-config
+        image: clickhouse/clickhouse-server:25.7
+        command:
+          - sh
+          - -c
+          - cp -r /etc/clickhouse-server/* /mnt/config/
+        volumeMounts:
+        - name: ch-config
+          mountPath: /mnt/config
+
+      containers:
+      - name: clickhouse
+        image: clickhouse/clickhouse-server:25.7
+        ports:
+        - containerPort: 8123
+          name: http
+        - containerPort: 9000
+          name: native
+        volumeMounts:
+        - name: ch-config
+          mountPath: /etc/clickhouse-server
+        - name: ch-data
+          mountPath: /var/lib/clickhouse
+  volumeClaimTemplates:
+  - metadata:
+      name: ch-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 200Gi
+  - metadata:
+      name: ch-config
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi

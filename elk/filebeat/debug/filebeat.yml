@@ -1,0 +1,17 @@
+filebeat.inputs:
+  - type: stdin
+    enabled: true
+processors:
+  - decode_json_fields:
+      fields: ["message"]
+      target: ""
+      overwrite_keys: true
+      max_depth: 1
+      add_error_key: true
+  - drop_fields:
+      fields: ["ecs", "agent", "input", "log", "host"]
+      ignore_missing: true
+
+output.console:
+  pretty: true # debug
+
