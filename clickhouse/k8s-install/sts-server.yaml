@@ -69,7 +69,23 @@ spec:
       resources:
         requests:
           storage: 200Gi
-  - metadata:
+# volumeClaimTemplates 是 全部pod都有一个副本
+#  - metadata:
+#      name: ch-config
+#    spec:
+#      accessModes: ["ReadWriteOnce"]
+#      resources:
+#        requests:
+#          storage: 1Gi
+#  - metadata:
+#      name: server-log
+#    spec:
+#      accessModes: ["ReadWriteOnce"]
+#      resources:
+#        requests:
+#          storage: 10Gi
+  volumes:
+  - metadata: 
       name: ch-config
     spec:
       accessModes: ["ReadWriteOnce"]

@@ -14,6 +14,7 @@
 # 先安装repo，再执行以下命令
 yum install -y docker-ce-20.10.20 docker-ce-cli-20.10.20 containerd.io
 ```
-
+3.docker-compose 只重启某一个服务
+docker-compose up -d --no-deps --force-recreate drone-runner
 
 

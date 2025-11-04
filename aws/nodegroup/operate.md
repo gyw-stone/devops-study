@@ -15,3 +15,23 @@ aws autoscaling terminate-instance-in-auto-scaling-group \
 
 ## 强制删除pod
 kubectl delete pod <pod-name> -n ns-name --force --grace-period=0
+
+## 查看节点组描述
+aws eks describe-nodegroup \
+    --cluster-name cluster-in-northeast-vpc \
+    --nodegroup-name ApplicationGroup # nodegroup name
+
+## 创建节点组
+aws eks create-nodegroup \
+    --cluster-name cluster-in-northeast-vpc \ 
+    --nodegroup-name InfrastructureGroup \
+    --node-role arn:aws:iam::249539173837:role/eksNodeRole \
+    --subnets "subnet-00c596a06af162c71" "subnet-04cd10876b7b63108" "subnet-019130d6b31c2da34" \
+    --scaling-config minSize=1,maxSize=10,desiredSize=1 \
+    --capacity-type ON_DEMAND \
+    --region ap-northeast-1 \
+    --instance-types r7a.xlarge \
+    --disk-size 50 \
+    --ami-type AL2023_x86_64_STANDARD \
+    --update-config maxUnavailable=1 \
+    --remote-access ec2SshKey=yimi-pem,sourceSecurityGroups="sg-004cf15eff8d53416"
