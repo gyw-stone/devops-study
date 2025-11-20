@@ -1,0 +1,106 @@
+groups:
+  - name: kubernetes-apps
+    rules:
+      - alert: KubernetesPodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[5m]) * 60 * 5 > 0
+        for: 2m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is crash looping"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting {{ $value }} times / 5 minutes."
+
+      - alert: KubernetesPodNotReady
+        expr: kube_pod_status_ready{condition="false"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is not ready"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has been in a non-ready state for longer than 5 minutes."
+
+      - alert: KubernetesDeploymentReplicasMismatch
+        expr: kube_deployment_spec_replicas != kube_deployment_status_available_replicas
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Deployment {{ $labels.deployment }} replicas mismatch"
+          description: "Deployment {{ $labels.deployment }} in namespace {{ $labels.namespace }} has {{ $labels.spec_replicas }} desired replicas but {{ $labels.available_replicas }} are available."
+
+      - alert: KubernetesStatefulSetReplicasMismatch
+        expr: kube_statefulset_status_replicas_ready != kube_statefulset_status_replicas
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "StatefulSet {{ $labels.statefulset }} replicas mismatch"
+          description: "StatefulSet {{ $labels.statefulset }} in namespace {{ $labels.namespace }} has {{ $labels.replicas }} desired replicas but {{ $labels.replicas_ready }} are ready."
+
+  - name: kubernetes-nodes
+    rules:
+      - alert: KubernetesNodeReady
+        expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Node {{ $labels.node }} is not ready"
+          description: "Node {{ $labels.node }} has been unready for a long time."
+
+      - alert: KubernetesMemoryPressure
+        expr: kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Node {{ $labels.node }} has memory pressure"
+          description: "Node {{ $labels.node }} has MemoryPressure condition."
+
+      - alert: KubernetesDiskPressure
+        expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Node {{ $labels.node }} has disk pressure"
+          description: "Node {{ $labels.node }} has DiskPressure condition."
+
+      - alert: KubernetesOutOfDisk
+        expr: kube_node_status_condition{condition="OutOfDisk",status="true"} == 1
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Node {{ $labels.node }} is out of disk"
+          description: "Node {{ $labels.node }} has OutOfDisk condition."
+
+  - name: kubernetes-resources
+    rules:
+      - alert: KubernetesPodCpuUsageHigh
+        expr: (sum(rate(container_cpu_usage_seconds_total[5m])) by (pod, namespace) / sum(container_spec_cpu_quota/container_spec_cpu_period) by (pod, namespace)) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "Pod {{ $labels.pod }} CPU usage is high"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} CPU usage is above 90% for more than 5 minutes."
+
+      - alert: KubernetesPodMemoryUsageHigh
+        expr: (sum(container_memory_working_set_bytes) by (pod, namespace) / sum(container_spec_memory_limit_bytes > 0) by (pod, namespace)) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "Pod {{ $labels.pod }} memory usage is high"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} memory usage is above 90% for more than 5 minutes." 

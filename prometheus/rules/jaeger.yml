@@ -1,0 +1,128 @@
+groups:
+  - name: jaeger-rules
+    rules:
+      # Jaeger可用性监控
+      - alert: JaegerDown
+        expr: up{job="jaeger"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Jaeger instance is down"
+          description: "Jaeger instance {{ $labels.instance }} has been down for more than 5 minutes."
+
+      # Jaeger Collector错误率监控
+      - alert: JaegerCollectorHighErrorRate
+        expr: |
+          (
+            rate(jaeger_collector_spans_rejected_total[5m]) /
+            rate(jaeger_collector_spans_received_total[5m])
+          ) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High error rate in Jaeger Collector"
+          description: "Jaeger Collector error rate is {{ $value }}% which is above 5%."
+
+      # Jaeger Query高延迟监控
+      - alert: JaegerQueryHighLatency
+        expr: |
+          histogram_quantile(0.95, 
+            rate(jaeger_query_requests_duration_seconds_bucket[5m])
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High latency in Jaeger Query"
+          description: "Jaeger Query 95th percentile latency is {{ $value }}s which is above 2s."
+
+      # Jaeger存储延迟监控
+      - alert: JaegerStorageHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(jaeger_collector_save_latency_bucket[5m])
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High storage latency in Jaeger"
+          description: "Jaeger storage 95th percentile latency is {{ $value }}s which is above 1s."
+
+      # Jaeger Agent连接问题
+      - alert: JaegerAgentConnectionIssues
+        expr: rate(jaeger_agent_reporter_batches_failures_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Jaeger Agent connection issues"
+          description: "Jaeger Agent on {{ $labels.instance }} is experiencing connection failures."
+
+      # Jaeger内存使用过高
+      - alert: JaegerHighMemoryUsage
+        expr: |
+          (
+            container_memory_working_set_bytes{pod=~"jaeger.*"} /
+            container_spec_memory_limit_bytes{pod=~"jaeger.*"}
+          ) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High memory usage in Jaeger"
+          description: "Jaeger pod {{ $labels.pod }} memory usage is {{ $value }}% which is above 90%."
+
+  - name: jaeger-business-rules
+    rules:
+      # 链路追踪覆盖率监控
+      - alert: LowTracingCoverage
+        expr: |
+          (
+            sum(rate(jaeger_collector_spans_received_total[1h])) /
+            sum(rate(http_requests_total[1h]))
+          ) * 100 < 10
+        for: 10m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low distributed tracing coverage"
+          description: "Tracing coverage is {{ $value }}% which is below 10%. This may indicate missing instrumentation."
+
+      # 错误链路数量异常
+      - alert: HighErrorTraces
+        expr: |
+          (
+            sum(rate(jaeger_collector_spans_received_total{status="error"}[5m])) /
+            sum(rate(jaeger_collector_spans_received_total[5m]))
+          ) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "High percentage of error traces"
+          description: "{{ $value }}% of traces contain errors, which is above 5%."
+
+      # 慢查询链路监控
+      - alert: SlowTraces
+        expr: |
+          histogram_quantile(0.95,
+            rate(jaeger_query_traces_duration_seconds_bucket[5m])
+          ) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Slow distributed traces detected"
+          description: "95th percentile of trace duration is {{ $value }}s which is above 10s." 

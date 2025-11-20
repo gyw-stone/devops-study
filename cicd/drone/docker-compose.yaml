@@ -1,0 +1,23 @@
+## 测试用的 drone
+version: '3'
+services:
+  drone:
+    image: drone/drone:2
+    container_name: drone
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - /var/lib/drone:/data
+    environment:
+      - DRONE_GITHUB_CLIENT_ID=Ov23liREjO0o56N6fQMU
+      - DRONE_GITHUB_CLIENT_SECRET=9f42e35481ebf753fa9df2285cf3db2c6db25e66
+      - DRONE_RPC_SECRET=894fbebaf5364f36da560cd0a1b08f0b
+      - DRONE_SERVER_HOST=drone-test.cctip.group
+      - DRONE_USER_CREATE=username:gyw-stone,admin:true
+      - DRONE_SERVER_PROTO=http
+      - DRONE_LOGS_TEXT=true
+      - DRONE_DATABASE_DRIVER=sqlite3
+      - DRONE_DATABASE_DATASOURCE=/data/database.sqlite
+      - DRONE_REGISTRATION_CLOSED=true
+      - DRONE_PROMETHEUS_ANONYMOUS_ACCESS=true

@@ -35,3 +35,9 @@ aws eks create-nodegroup \
     --ami-type AL2023_x86_64_STANDARD \
     --update-config maxUnavailable=1 \
     --remote-access ec2SshKey=yimi-pem,sourceSecurityGroups="sg-004cf15eff8d53416"
+
+## 删除节点组,注意：如有安全组绑定删除不了，需要先删除对应的安全组
+aws eks delete-nodegroup \
+  --cluster-name cluster-in-northeast-vpc \
+  --nodegroup-name basicNodeGroup \
+  --region ap-northeast-1

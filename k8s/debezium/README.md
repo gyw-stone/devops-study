@@ -64,7 +64,12 @@ curl -X PUT \
     "heartbeat.interval.ms": "10000"
 }'
 
-## 重置offsets
+## 优化配置
+"schema.history.internal.kafka.recovery.attempts": "100",
+"schema.history.internal.kafka.recovery.poll.interval.ms": "5000",
+
+## 重置offsets 操作
+curl -s http://localhost:8083/connectors/cwallet-db-connector/stop
 curl -X DELETE -H "Content-Type: application/json" \
   "http://localhost:8083/connectors/cwallet-db-connector/offsets"
 ## 报错binlog问题处理方案

@@ -1,0 +1,70 @@
+import os
+import json
+import gzip
+from collections import Counter
+
+#LOG_DIR = "/Users/stone/Desktop/waflogs"   # 你下载的日志目录
+LOG_DIR = "/Users/stone/Desktop/test"
+
+def load_log_file(filepath):
+    """支持 .gz 和普通 .log 文件"""
+    if filepath.endswith(".gz"):
+        with gzip.open(filepath, "rt", encoding="utf-8") as f:
+            for line in f:
+                yield line
+    else:
+        with open(filepath, "r", encoding="utf-8") as f:
+            for line in f:
+                yield line
+
+
+def analyze_logs():
+    uri_counter = Counter()
+    ip_counter = Counter()
+    ua_counter = Counter()
+    httpMethod_counter = Counter()
+
+    files = [os.path.join(LOG_DIR, f) for f in os.listdir(LOG_DIR) if f.endswith(("gz", "log"))]
+
+    print(f"▶ Found {len(files)} log files to analyze.\n")
+
+    for file in files:
+        print(f"📌 Processing: {os.path.basename(file)}")
+        for line in load_log_file(file):
+            try:
+                entry = json.loads(line.strip())
+                req = entry.get("httpRequest", {})
+
+                uri = req.get("uri", "")
+                ip = req.get("clientIp", "")
+                httpMethod = req.get("httpMethod", "")
+                ua = req.get("requestHeaders", [{}])[0].get("value", "")
+
+                if uri: uri_counter[uri] += 1
+                if ip: ip_counter[ip] += 1
+                if ua: ua_counter[ua] += 1
+                if httpMethod: httpMethod_counter[str(httpMethod)] += 1
+
+            except Exception:
+                continue
+
+    print("\n=== 🔥 Top 10 Requested URIs ===")
+    for uri, count in uri_counter.most_common(10):
+        print(f"{uri}: {count}")
+
+    print("\n=== 👥 Top 10 Client IPs ===")
+    for ip, count in ip_counter.most_common(10):
+        print(f"{ip}: {count}")
+
+    print("\n=== 📡 Top 10 User-Agent ===")
+    for ua, count in ua_counter.most_common(10):
+        print(f"{ua[:80]}...: {count}")
+
+    print("\n=== 📊 HTTP Status Code Counts ===")
+    for code, count in httpMethod_counter.most_common():
+        print(f"{code}: {count}")
+
+
+if __name__ == "__main__":
+    analyze_logs()
+
