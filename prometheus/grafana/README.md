@@ -17,3 +17,7 @@ loki绑定数据源到grafana上
 highmax 函数 or alias别名 reduce the size of the returned series name
 # 使用public dashboards，read-only，多次访问建议使用
 # https://grafana.com/docs/grafana/latest/dashboards/dashboard-public/
+
+
+## FQA
+grafana 告警alertmanager 选择grafana 容易出现识别状态问题，特别是8.5.x版本，直接选择alertmanager更好

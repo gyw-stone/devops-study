@@ -1,6 +1,11 @@
 services:
   wg-easy:
     environment:
+      - WG_MTU=1280
+      - WG_HOST=test.wg.cctip.io
+      - WG_DEFAULT_DNS=8.8.8.8
+      - WG_DEFAULT_ADDRESS=10.0.8.x
+      - WG_ALLOWED_IPS=10.0.8.0/24,172.17.0.0/16
       - INSECURE=true
 
     image: ghcr.io/wg-easy/wg-easy:15

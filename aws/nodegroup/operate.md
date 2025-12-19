@@ -1,4 +1,4 @@
-1.丛节点组移除指定节点
+1.从节点组移除指定节点
 ## 打污点
 kubectl taint nodes <node-name> private-nodegroup=block:NoSchedule --overwrite
 ## 移除污点
