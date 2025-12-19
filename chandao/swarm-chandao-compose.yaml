@@ -1,0 +1,87 @@
+networks: 
+  chandaonet:
+    driver: overlay
+services: 
+  chandao-db-service: 
+    image: bitnami/mariadb:10.6
+    restart: always
+    networks: 
+      - chandaonet
+    volumes: 
+      - '/usr/local/bankpayos/efs/chandao/mysql:/bitnami/mariadb'
+    environment:
+      - MARIADB_USER=my_user
+      - MARIADB_PASSWORD=my_password
+      - MARIADB_DATABASE=chandao
+      - MARIADB_CHARACTER_SET=utf8mb4
+      - MARIADB_COLLATE=utf8mb4_unicode_ci
+      - MARIADB_ROOT_PASSWORD=chPas4Haxi@1I
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mariadb/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+  chandao-cache-service:
+    image: bitnami/redis:6.2
+    restart: always
+    environment:
+      - REDIS_PASSWORD=chPas4Haxi@1I
+    volumes:
+      - '/usr/local/bankpayos/efs/chandao/redis:/bitnami/redis/data'
+    networks:
+      - chandaonet
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          #- node.labels.region == mumbai
+          - node.role == manager
+  chandao-service:
+    image: easysoft/zentao:21.2
+    restart: always
+    ports:
+      - '8080:80'
+    volumes:
+      - '/usr/local/bankpayos/efs/chandao/data:/data'
+    depends_on:
+      - chandao-db-service
+      - chandao-cache-service
+    environment:
+      - ZT_MYSQL_HOST=chandao-db-service
+      - ZT_MYSQL_PORT=3306
+      - ZT_MYSQL_USER=root
+      - ZT_MYSQL_PASSWORD=chPas4Haxi@1I
+      - ZT_MYSQL_DB=chandao
+      - PHP_SESSION_TYPE=redis
+      - PHP_SESSION_PATH=tcp://chandao-cache-service:6379?auth=chPas4Haxi@1I
+      - PHP_EXT_REDIS=true
+      - ZT_REDIS_HOST=chandao-cache-service
+      - ZT_REDIS_PORT=6379
+      - ZT_REDIS_PASSWORD=chPas4Haxi@1I
+      - ZT_REDIS_SERIALIZER=igbinary
+      - ZT_CACHE_ENABLE=true
+      - ZT_CACHE_TYPE=redis
+      - ZT_CACHE_SCOPE=private
+      - ZT_CACHE_LIFETIME=0
+      - PHP_MAX_EXECUTION_TIME=120
+      - PHP_MEMORY_LIMIT=512M
+      - PHP_POST_MAX_SIZE=128M
+      - PHP_UPLOAD_MAX_FILESIZE=128M
+    networks:
+      - chandaonet
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          #- node.labels.region == mumbai
+          - node.role == manager
+      labels:
+          - traefik.enable=true
+          - traefik.http.routers.chandao.rule=Host(`devzentao1098485155.agentstudio.site`)
+          - traefik.http.routers.chandao.entrypoints=web
+          - traefik.http.services.chandao.loadbalancer.server.port=80

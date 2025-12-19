@@ -1,0 +1,73 @@
+services:
+  chandao-db:
+    image: bitnami/mariadb:10.6
+    container_name: chandao-db
+    pull_policy: if_not_present
+    restart: always
+    volumes:
+      - '/usr/local/bankpayos/efs/chandao/mysql:/bitnami/mariadb'
+    networks:
+      - chandaonet
+    environment:
+      - MARIADB_USER=my_user
+      - MARIADB_PASSWORD=my_password
+      - MARIADB_DATABASE=chandao
+      - MARIADB_CHARACTER_SET=utf8mb4
+      - MARIADB_COLLATE=utf8mb4_unicode_ci
+      - MARIADB_ROOT_PASSWORD=chPas4Haxi@1I
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mariadb/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+  chandao-cache:
+    image: bitnami/redis:6.2
+    container_name: chandao-cache
+    pull_policy: if_not_present
+    restart: always
+    environment:
+      - REDIS_PASSWORD=chPas4Haxi@1I
+    volumes:
+      - '/usr/local/bankpayos/efs/chandao/redis:/bitnami/redis/data'
+    networks:
+      - chandaonet
+  chandao:
+    image: easysoft/zentao:21.2
+    container_name: chandao
+    pull_policy: always
+    restart: always
+    ports:
+      - '8080:80'
+    volumes:
+      - '/usr/local/bankpayos/efs/chandao/data:/data'
+
+    depends_on:
+      - chandao-db
+      - chandao-cache
+    environment:
+      - ZT_MYSQL_HOST=chandao-db
+      - ZT_MYSQL_PORT=3306
+      - ZT_MYSQL_USER=root
+      - ZT_MYSQL_PASSWORD=chPas4Haxi@1I
+      - ZT_MYSQL_DB=chandao
+      - PHP_SESSION_TYPE=redis
+      - PHP_SESSION_PATH=tcp://chandao-cache:6379?auth=chPas4Haxi@1I
+      - PHP_EXT_REDIS=true
+      # end
+      - ZT_REDIS_HOST=chandao-cache
+      - ZT_REDIS_PORT=6379
+      - ZT_REDIS_PASSWORD=chPas4Haxi@1I
+      - ZT_REDIS_SERIALIZER=igbinary # php, igbinary
+      - ZT_CACHE_ENABLE=true
+      - ZT_CACHE_TYPE=redis
+      - ZT_CACHE_SCOPE=private
+      - ZT_CACHE_LIFETIME=0
+      - PHP_MAX_EXECUTION_TIME=120
+      - PHP_MEMORY_LIMIT=512M
+      - PHP_POST_MAX_SIZE=128M
+      - PHP_UPLOAD_MAX_FILESIZE=128M
+    networks:
+      - chandaonet
+networks:
+  chandaonet:
+    driver: bridge
