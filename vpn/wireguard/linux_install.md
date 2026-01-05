@@ -24,7 +24,7 @@ PostDown = iptables -D FORWARD -i ens5 -o wg0 -m state --state RELATED,ESTABLISH
 wg-quick up wg0
 wg-quick down wg0
 4.查看状态
-wg-quick show
+wg show
 
 参考文献：
 1.https://www.cnblogs.com/yearbbs/articles/18646170
