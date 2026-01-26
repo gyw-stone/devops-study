@@ -30,3 +30,21 @@ kafka-topics.sh --bootstrap-server localhost:9092 \
   --topic schema-changes.detrade-v2-db \
   --partitions 1 \
 
+
+### 扩展副本到每个node
+## 生成一个分配的json文件,类似
+bin/kafka-reassign-partitions.sh --bootstrap-server localhost:9092 --topics-to-move-json-file /tmp/topics.json --broker-list "1,2,3" --generate
+
+# cat /tmp/topics.json 
+{
+  "version": 1,
+  "partitions": [
+    {
+      "topic": "quickstart-events",
+      "partition": 0,
+      "replicas": [1, 2, 3]
+    }
+  ]
+}
+## 修改topic 然后执行这个
+bin/kafka-reassign-partitions.sh --bootstrap-server localhost:9092 --reassignment-json-file /tmp/topics.json --execute

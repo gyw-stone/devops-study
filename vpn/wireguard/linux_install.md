@@ -28,3 +28,8 @@ wg show
 
 参考文献：
 1.https://www.cnblogs.com/yearbbs/articles/18646170
+
+
+### compose安装
+1.docker-compose up -d
+2.安装后修改启动脚本，然后重启

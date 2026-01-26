@@ -8,3 +8,5 @@ sar -u 1 5
 pidstat -u 1 5
 vmstat 1 5
 mpstat -P ALL 1 3
+
+参考链接: https://help.aliyun.com/zh/ecs/support/query-and-analysis-of-system-loads-on-linux-instances

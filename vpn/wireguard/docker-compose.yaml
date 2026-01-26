@@ -1,28 +1,30 @@
 services:
   wg-easy:
     environment:
-      - WG_MTU=1280
-      - WG_HOST=test.wg.cctip.io
-      - WG_DEFAULT_DNS=8.8.8.8
-      - WG_DEFAULT_ADDRESS=10.0.8.x
-      - WG_ALLOWED_IPS=10.0.8.0/24,172.17.0.0/16
+      - PORT=51821
       - INSECURE=true
+      - INIT_IPV4_CIDR=10.8.0.0/24
+      - INIT_ALLOWED_IPS=10.8.0.0/24
+      - WG_TABLE=off
 
     image: ghcr.io/wg-easy/wg-easy:15
-    container_name: test-easy
+    container_name: ops-prd-easy
     networks:
       wg:
         ipv4_address: 10.42.42.42
         ipv6_address: fdcc:ad94:bacf:61a3::2a
     volumes:
-      - /tmp/.wg-easy:/etc/wireguard
+      - /data/.new-wg-easy:/etc/wireguard
+      - /data/iptables.sh:/iptables.sh:ro
+      - /lib/modules:/lib/modules:ro
     ports:
-      - "51820:51820/udp"
+      - "6450:51820/udp"
       - "51821:51821/tcp"
     restart: unless-stopped
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
+      # - NET_RAW # ⚠️ Uncomment if using Podman
     sysctls:
       - net.ipv4.ip_forward=1
       - net.ipv4.conf.all.src_valid_mark=1

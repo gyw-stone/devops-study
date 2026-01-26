@@ -1,5 +1,3 @@
-# 现状
-已有一台单节点运行，需要转成集群模式
 # 安装集群
 架构： 2 server+keeper 1 单独keeper，keeper组成集群，然后2个分片
 rpm方式安装:
@@ -76,6 +74,7 @@ sudo systemctl start clickhouse-keeper.service
 sudo ssytemctl enable clickhouse-keeper.service --now
 
 ## clickhouse-server 核心配置
+## '/var/lib/clickhouse 全部替换为/data'
 cat /etc/clickhouse-server/config.xml
     <storage_configuration>
         <disks>
@@ -136,7 +135,7 @@ cat /etc/clickhouse-server/config.xml
     </zookeeper>
 
     <macros>
-        <shard>1</shard>      <!-- Set to 1 on server1, 2 on server2 -->
+        <shard>1</shard>      <!-- 2 node keep same -->
         <replica>replica1</replica> <!-- Set unique value per server -->
     </macros>
 ## clickhouse-server 密码配置
@@ -247,6 +246,43 @@ SELECT
 FROM kafka_cctip_user_assets;
 
 ## kafka触发增量快照
-kafka-console-producer.sh --broker-list kafka-broker-0.kafka-broker-headless.middleware.svc.cluster.local:9092 --topic debezium-signals --property "parse.key=true" --property "key.separator=:"
+kafka-console-producer.sh --bootstrap-server localhost:9092 --topic debezium-signals --property "parse.key=true" --property "key.separator=:"
 # 上面命令后敲击的触发消息
 cwallet:{"type":"execute-snapshot","data": {"data-collections": ["cctip-db-account.cctip-user-assets", "cctip-db-account.cctip-user-assets-flows"], "type": "incremental"}}
+## 停掉增量快照的触发
+detrade:{"type":"stop-snapshot","data": {"data-collections": ["cctip-db-crypto-trade.t_detrade_order"], "type": "incremental"}}
+
+### 引入到k8s去做映射
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse-service
+  namespace: clickhouse
+  labels:
+    app: clickhouse-external
+spec:
+  clusterIP: None 
+  ports:
+  - name: http
+    port: 8123  
+    protocol: TCP
+  - name: tcp
+    port: 9000  
+    protocol: TCP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: clickhouse-service  
+  namespace: clickhouse
+subsets:
+  - addresses:
+    - ip: 172.17.4.130
+    - ip: 172.17.128.157
+    ports:
+    - name: http
+      port: 8123  
+      protocol: TCP
+    - name: tcp
+      port: 9000
+      protocol: TCP

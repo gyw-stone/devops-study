@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-NODE_EXPORTER_VERSION="1.9.1"
+NODE_EXPORTER_VERSION="1.10.2"
 NODE_EXPORTER_NAME="node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64"
 NODE_EXPORTER_URL="https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/${NODE_EXPORTER_NAME}.tar.gz"
 ARCHIVE_NAME="node_exporter.tar.gz"

@@ -14,3 +14,32 @@ GET _cat/health
 GET _cat/allocation?v
 # 节点jvm 详情
 GET /_nodes/stats/jvm?pretty
+
+
+## es 查看唯一IP访问数
+GET /cctip_nginx_record-2025.12.05/_search
+{
+  "track_total_hits": 100000, 
+  "size": 0,
+  "query": {
+    "range": {
+      "@timestamp": {
+        "gte": "2025-12-05T07:30:00",
+        "lt": "2025-12-05T07:40:00"
+      }
+    }
+  },
+  "aggs": {
+    "unique_ips": {
+      "cardinality": {
+        "field": "client_ip.keyword"
+      }
+    },
+    "top_30_ips": {
+      "terms": {
+        "field": "client_ip.keyword",
+        "size": 10
+      }
+    }
+  }
+}

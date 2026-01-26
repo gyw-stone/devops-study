@@ -69,7 +69,7 @@ curl -X PUT \
 "schema.history.internal.kafka.recovery.poll.interval.ms": "5000",
 
 ## 重置offsets 操作
-curl -s http://localhost:8083/connectors/cwallet-db-connector/stop
+curl -X PUT http://localhost:8083/connectors/cwallet-db-connector/stop
 curl -X DELETE -H "Content-Type: application/json" \
   "http://localhost:8083/connectors/cwallet-db-connector/offsets"
 ## 报错binlog问题处理方案
@@ -77,3 +77,16 @@ curl -X DELETE -H "Content-Type: application/json" \
 2.停止connector
 3.重置offsets
 4.恢复connector
+
+
+## 增量快照手动触发坑
+1.用户必须要有写入信令表的权限
+2.增量信息触发一次就会全量复制一次，所以执行一次信号就行了
+
+
+## 迁移debezium
+1.同步相关的topic，connect_xxx,schema.xxx
+2.新connectors 使用schema_only 模式恢复，需要有以下两行
+ "schema.history.internal.kafka.recovery.mode": "recovery",
+ “snapshot.mode": "schema_only",
+
