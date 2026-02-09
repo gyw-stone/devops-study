@@ -1,0 +1,24 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: my-cluster
+  region: ap-southeast-1
+  version: "1.35"
+
+nodeGroups:
+  - name: xwally-prod-eks
+    instanceType: m5.large 
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 3
+    ssh:
+      allow: false
+
+# 可以添加更多配置选项
+vpc:
+  cidr: 10.20.0.0/16
+  
+iam:
+  withOIDC: true
+

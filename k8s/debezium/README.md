@@ -18,7 +18,7 @@ http://localhost:8083/connectors
 # 查看状态
 curl -s http://localhost:8083/connectors/cwallet-db-connector/status
 # kakfa增量调用
-kafka-console-producer.sh --broker-list kafka:9092 --topic debezium-signals --property "parse.key=true" --property "key.separator=:"
+kafka-console-producer.sh --bootstrap-server localhost:9092 --topic debezium-signals --property "parse.key=true" --property "key.separator=:"
 cwallet:{"type":"execute-snapshot","data": {"data-collections": ["cctip-db-account.cctip-user-assets", "cctip-db-account.cctip-user-assets-flows"], "type": "incremental"}}
 # 更新或新建
 curl -X PUT \
@@ -90,3 +90,15 @@ curl -X DELETE -H "Content-Type: application/json" \
  "schema.history.internal.kafka.recovery.mode": "recovery",
  “snapshot.mode": "schema_only",
 
+
+## 走json文件创建连接器
+curl -X POST \ -H 'Content-Type: application/json' \ --data-binary @cwallet-detrade-db.json \ http://localhost:8083/connectors/cwallet-detrade-db-connector/config
+
+## FAQ 
+报错先看用户是否有权限
+1.schema history isn't known
+## 检测表结构topic里面是否有对应的表 
+kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic schema-changes.activity-v2 \
+  --from-beginning

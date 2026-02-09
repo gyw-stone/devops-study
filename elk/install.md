@@ -1,5 +1,5 @@
 ## 架构
-filebeat-->logstash-->es-->kibana
+filebeat-->kafka-->logstash-->es-->kibana
 filebeat 是 k8s sidecar
 es logstash kibana 是外部机器部署，filebeat通过内网IP 直接连接logstash
 日志多可以用kafka解藕，加快查询速度加redis缓存
@@ -72,10 +72,12 @@ systemctl enable elasticsearch.service --now
 # 重置密码
 /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic 
 
-丛节点加入集群：
+slave节点加入集群：
+从节点配置：
+  修改cluster_name,node_name,存储路径就行，其它不用动，然后根据token加入集群
 主节点生成token: 
 /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s node
-丛节点配置：
+slave节点配置：
 /usr/share/elasticsearch/bin/elasticsearch-reconfigure-node --enrollment-token <token-here>
 然后修改下node_name之类,启动服务
 
