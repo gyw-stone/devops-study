@@ -24,17 +24,17 @@ aws eks describe-nodegroup \
 ## 创建节点组
 aws eks create-nodegroup \
     --cluster-name cluster-in-northeast-vpc \ 
-    --nodegroup-name InfrastructureGroup \
+    --nodegroup-name BaseGroup \
     --node-role arn:aws:iam::249539173837:role/eksNodeRole \
     --subnets "subnet-00c596a06af162c71" "subnet-04cd10876b7b63108" "subnet-019130d6b31c2da34" \
-    --scaling-config minSize=1,maxSize=10,desiredSize=1 \
+    --scaling-config minSize=2,maxSize=10,desiredSize=4 \
     --capacity-type ON_DEMAND \
     --region ap-northeast-1 \
     --instance-types r7a.xlarge \
     --disk-size 50 \
     --ami-type AL2023_x86_64_STANDARD \
     --update-config maxUnavailable=1 \
-    --remote-access ec2SshKey=yimi-pem,sourceSecurityGroups="sg-004cf15eff8d53416"
+    --remote-access ec2SshKey=yimi-pem
 
 ## 删除节点组,注意：如有安全组绑定删除不了，需要先删除对应的安全组
 aws eks delete-nodegroup \

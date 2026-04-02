@@ -247,8 +247,8 @@ FROM kafka_cctip_user_assets;
 
 ## kafka触发增量快照
 kafka-console-producer.sh --bootstrap-server localhost:9092 --topic debezium-signals --property "parse.key=true" --property "key.separator=:"
-# 上面命令后敲击的触发消息
-cwallet:{"type":"execute-snapshot","data": {"data-collections": ["cctip-db-account.cctip-user-assets", "cctip-db-account.cctip-user-assets-flows"], "type": "incremental"}}
+# 上面命令后敲击的触发消息,修改项:cwallet-->prefix-topic, data-collections 是 include_table_list
+cwallet:{"type":"execute-snapshot","data": {"data-collections": ["cctip-db-account.cctip-user-assets", "cctip-db-account.cctip-user-assets-flows"], "type": "incremental"}} 
 ## 停掉增量快照的触发
 detrade:{"type":"stop-snapshot","data": {"data-collections": ["cctip-db-crypto-trade.t_detrade_order"], "type": "incremental"}}
 

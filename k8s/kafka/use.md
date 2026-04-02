@@ -48,3 +48,22 @@ bin/kafka-reassign-partitions.sh --bootstrap-server localhost:9092 --topics-to-m
 }
 ## 修改topic 然后执行这个
 bin/kafka-reassign-partitions.sh --bootstrap-server localhost:9092 --reassignment-json-file /tmp/topics.json --execute
+
+10.修改topic分区
+bin/kafka-topics.sh \
+ --bootstrap-server localhost:9092 \
+ --alter \
+ --topic stats.cctip-db-stats.cctip-user-asset-statistic-usdt \
+ --partitions 6
+
+11.查看消费者的状态
+bin/kafka-consumer-groups.sh --bootstrap-server 172.17.131.48:9092 --describe --group clickhouse_stats_cctip_user_asset_statistic_usdt
+
+12.修改topic过期时间
+bin/kafka-configs.sh --bootstrap-server 172.17.131.48:9092 \
+  --entity-type topics \
+  --entity-name stats.cctip-db-stats.cctip-user-asset-statistic-usdt \
+  --alter \
+  --add-config retention.ms=36000000
+
+13.删除topic过期时间配置，恢复默认值

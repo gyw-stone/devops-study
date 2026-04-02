@@ -1,3 +1,4 @@
+## 待把config用同一个pvc的优化，当前是每个sts 有自己的config
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
