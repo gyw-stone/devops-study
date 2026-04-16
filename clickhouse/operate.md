@@ -63,7 +63,7 @@ DETACH TABLE cctip_db_stats.t_cctip_user_asset_statistic_usdt_kafka on cluster d
 ATTACH TABLE cctip_db_stats.t_cctip_user_asset_statistic_usdt_kafka on cluster default;
 Drop table cctip_db_stats.t_cctip_user_asset_statistic_usdt_kafka on cluster default;
 
-10.查看目标表的总记录数和当天的去重用户数
+10.查看目标表的总记录数和当天的去重数
 SELECT
     count() AS total,
     uniqExact(user_id, current_date) AS uniq_cnt
