@@ -53,4 +53,70 @@ aws ec2 associate-route-table \
   --subnet-id subnet-095c79580f7be9dc3 \
   --route-table-id rtb-097650c009045528c
   
+## 思路
+想创建子网，绑定到nat 网关，然后再创建eks,然后创建nodegroup, 用nfs client绑定efs, 控制端绑定集群，用cli命令管理eks
+## 创建节点组
+aws eks create-nodegroup \
+    --cluster-name xwally-prod-eks \
+    --nodegroup-name InfraGroup \
+    --node-role arn:aws:iam::id:role/eksNodeRole \
+    --subnets "subnet-02292d7368ae6aa87" "subnet-0f3d57d3a5b3b1332" \
+    --scaling-config minSize=1,maxSize=10,desiredSize=1 \
+    --capacity-type ON_DEMAND \
+    --region ap-southeast-1 \
+    --instance-types r5a.xlarge \
+    --disk-size 50 \
+    --ami-type "AL2023_x86_64_STANDARD" \
+    --update-config maxUnavailable=1 \
+    --remote-access ec2SshKey=xwally-prod-service-rsa
 
+## 绑定efs
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: efs-sc
+provisioner: efs.csi.aws.com
+parameters:
+  provisioningMode: efs-ap
+  fileSystemId: fs-id
+  directoryPerms: "700"
+  gidRangeStart: "1000" # optional
+  gidRangeEnd: "2000" # optional
+  basePath: "/dynamic_provisioning" # optional
+  subPathPattern: "${.PVC.namespace}/${.PVC.name}" # optional
+  ensureUniqueDirectory: "true" # optional
+  reuseAccessPoint: "false" # optional
+
+## aws eks 安装 aws cli 和 kubectl
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip 
+aws --version
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl 
+mv kubectl /usr/local/bin/
+kubectl version --client
+aws configure
+aws eks update-kubeconfig --region ap-southeast-1 --name xwally-prod-eks
+kubectl config current-context
+kubectl get ns
+
+##
+---IAM角色授权---
+eksctl create iamserviceaccount \
+    --cluster=xwally-prod-eks \
+    --namespace=kube-system \
+    --name=aws-load-balancer-controller \
+    --attach-policy-arn=arn:aws:iam::id:policy/AWSLoadBalancerControllerIAMPolicy \
+    --override-existing-serviceaccounts \
+    --region ap-southeast-1 \
+    --approve
+    
+---安装 aws负载控制器---
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=eks \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller \
+  --set region=ap-southeast-1 \
+  --set vpcId=vpc-0289f20c310d69186 \
+  --version 1.13.0

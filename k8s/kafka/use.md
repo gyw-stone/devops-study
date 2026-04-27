@@ -57,13 +57,32 @@ bin/kafka-topics.sh \
  --partitions 6
 
 11.查看消费者的状态
-bin/kafka-consumer-groups.sh --bootstrap-server 172.17.131.48:9092 --describe --group clickhouse_stats_cctip_user_asset_statistic_usdt
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group clickhouse_stats_cctip_user_asset_statistic_usdt
 
 12.修改topic过期时间
-bin/kafka-configs.sh --bootstrap-server 172.17.131.48:9092 \
+bin/kafka-configs.sh --bootstrap-server localhost:9092 \
   --entity-type topics \
   --entity-name stats.cctip-db-stats.cctip-user-asset-statistic-usdt \
   --alter \
   --add-config retention.ms=36000000
 
 13.删除topic过期时间配置，恢复默认值
+kafka-configs.sh --bootstrap-server <Broker地址> \
+--entity-type topics \
+--entity-name <Topic名称> \
+--alter \
+--delete-config retention.ms
+
+14.指定偏移量消息查看
+kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+--topic stats.cctip-db-stats.cctip-user-asset-statistic-usdt \
+--partition 2 \
+--offset 915624911 \
+--max-messages 2
+
+15.修改topic 过期的最大存储大小，单partition的最大大小，多分区就是多个最大大小
+bin/kafka-configs.sh --bootstrap-server localhost:9092 \
+  --entity-type topics \
+  --entity-name stats.cctip-db-stats.cctip-user-asset-statistic-usdt \
+  --alter \
+  --add-config retention.bytes=$((30*1024*1024*1024))

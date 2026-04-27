@@ -1,0 +1,44 @@
+## hpa 配置模版
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cctip-webapp
+  namespace: cctip
+spec:
+  behavior:
+    scaleDown:
+      policies:
+      - periodSeconds: 90
+        type: Percent
+        value: 10
+      selectPolicy: Max
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      policies:
+      - periodSeconds: 15
+        type: Percent
+        value: 100
+      - periodSeconds: 15
+        type: Pods
+        value: 3
+      selectPolicy: Max
+      stabilizationWindowSeconds: 0
+  maxReplicas: 3
+  metrics:
+  - resource:
+      name: memory
+      target:
+        averageUtilization: 80
+        type: Utilization
+    type: Resource
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 80
+        type: Utilization
+    type: Resource
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cctip-webapp

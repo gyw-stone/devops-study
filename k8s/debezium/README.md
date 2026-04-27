@@ -102,3 +102,6 @@ kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 \
   --topic schema-changes.activity-v2 \
   --from-beginning
+
+2.debezium 出发增量成功后，clickhouse 只有最新数据
+ 首先检查日志，看是否有incremental xxx 的日志，如果有说明生产没问题，去看消费端 clickhouse mv表是否允许read 的操作
