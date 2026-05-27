@@ -1,26 +1,29 @@
 ```shell
 #!/bin/bash
-#input_IP=$1
-#input_IP=10.100.13.133 
-input_IP=192.168.185.21
-hostIP=`hostname -I | awk '{print $1}'`
+# ===== Zabbix Agent 一键安装脚本 =====
+# 用法: bash zabbix_agent_install.sh <ZABBIX_SERVER_IP>
+# 示例: bash zabbix_agent_install.sh 192.168.1.100
+
+set -euo 
+ZABBIX_SERVER="${1:-192.168.185.21}"
+HOST_IP=`hostname -I | awk '{print $1}'`
 ZABBIX_AGENT_CONF="/etc/zabbix/zabbix_agentd.conf"
 ZABBIX_AGENT_CONF_dkpg="/etc/zabbix/zabbix_agentd.conf.dpkg-new"
 # centos7
 Install() {
-	sed -i "s/^Hostname=.*/Hostname=$hostIP/g" /etc/zabbix/zabbix_agent2.conf
-	sed -i "s/^Server=.*/Server=$input_IP/g" /etc/zabbix/zabbix_agent2.conf
-	sed -i "s/^ServerActive=.*/ServerActive=$input_IP/g" 	/etc/zabbix/zabbix_agent2.conf
+	sed -i "s/^Hostname=.*/Hostname=$HOST_IP/g" /etc/zabbix/zabbix_agent2.conf
+	sed -i "s/^Server=.*/Server=$ZABBIX_SERVER/g" /etc/zabbix/zabbix_agent2.conf
+	sed -i "s/^ServerActive=.*/ServerActive=$ZABBIX_SERVER/g" 	/etc/zabbix/zabbix_agent2.conf
 	systemctl enable zabbix-agent2.service
 	systemctl start zabbix-agent2.service
 	systemctl status zabbix-agent2.service
 }
 # ubuntu
 Install1() {
-	sed -i "s/^Hostname=.*/Hostname=$hostIP/g"
+	sed -i "s/^Hostname=.*/Hostname=$HOST_IP/g"
 	/etc/zabbix/zabbix_agentd.conf
-	sed -i "s/^Server=.*/Server=$input_IP/g" /etc/zabbix/zabbix_agentd.conf
-	sed -i "s/^ServerActive=.*/ServerActive=$input_IP/g"	/etc/zabbix/zabbix_agentd.conf
+	sed -i "s/^Server=.*/Server=$ZABBIX_SERVER/g" /etc/zabbix/zabbix_agentd.conf
+	sed -i "s/^ServerActive=.*/ServerActive=$ZABBIX_SERVER/g"	/etc/zabbix/zabbix_agentd.conf
 	systemctl enable zabbix-agent.service
 	systemctl start zabbix-agent.service
 	systemctl status zabbix-agent.service
@@ -86,10 +89,10 @@ cd zabbix-7.0.2.tar.gz
 make install 
 mkdir /etc/zabbix
 cp /usr/local/etc/zabbix_agentd.conf /etc/zabbix/zabbix_agentd.conf
-input_IP=192.168.46.159
-hostIP=`hostname -I | awk '{print $1}'`
-sed -i "s/^Hostname=.*/Hostname=$hostIP/g" /etc/zabbix/zabbix_agentd.conf
-sed -i "s/^Server=.*/Server=$input_IP/g" /etc/zabbix/zabbix_agentd.conf
+ZABBIX_SERVER=192.168.46.159
+HOST_IP=`hostname -I | awk '{print $1}'`
+sed -i "s/^Hostname=.*/Hostname=$HOST_IP/g" /etc/zabbix/zabbix_agentd.conf
+sed -i "s/^Server=.*/Server=$ZABBIX_SERVER/g" /etc/zabbix/zabbix_agentd.conf
 
 cat >/lib/systemd/system/zabbix-agent.service <<EOF
 [Unit]
@@ -166,8 +169,8 @@ ansible -i chengdu_server_list all -m shell -a "docker images|grep ocr_business_
 
     - name: 设置主机名为当前 IP
       shell: |
-        hostIP=$(hostname -I | awk '{print $1}')
-        sed -i 's/^Hostname=.*/Hostname=$hostIP/g' /etc/zabbix/zabbix_agentd.conf
+        HOST_IP=$(hostname -I | awk '{print $1}')
+        sed -i 's/^Hostname=.*/Hostname=$HOST_IP/g' /etc/zabbix/zabbix_agentd.conf
 
     - name: 启动并启用 Zabbix agent
       systemd:

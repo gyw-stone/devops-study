@@ -1,6 +1,3 @@
-
-
-```yaml
 groups:
   - name: Blackbox 监控告警
     rules:
@@ -52,5 +49,3 @@ groups:
       annotations:
         summary: HTTP请求超时 (instance {{ $labels.instance }})
         description: "HTTP请求超时超过10秒n  VALUE = {{ $value }}n  LABELS = {{ $labels }}"
-```
-

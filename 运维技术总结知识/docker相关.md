@@ -1,5 +1,5 @@
 ```
-curl -u "admin:AYLyR89wmmMlVFwa" -X 'GET' "https://dockerhub.datagrand.com/api/v2.0/projects/idps/?repositories?page_size=100" -k -s | yq '.[].name' -"
+curl -u "user:passwd" -X 'GET' "https://dockerhub.datagrand.com/api/v2.0/projects/idps/?repositories?page_size=100" -k -s | yq '.[].name' -"
 ```
 
 ```
@@ -36,37 +36,6 @@ curl -u "admin:AYLyR89wmmMlVFwa" -X 'GET' "https://dockerhub.datagrand.com/api/v
 ```
 ## 查看当前用了多少个地址
 docker network inspect --verbose --format  '{{range .Services}}{{printf "%s\n" .VIP}}{{range .Tasks}}{{printf "%s\n" .EndpointIP}}{{end}}{{end}}' ingress |grep -v '^$' |wc -l
-```
-
-```
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: pv-idps100
-spec:
-  capacity:
-    storage: 300Gi
-  volumeMode: Filesystem
-  persistentVolumeReclaimPolicy: Retain
-  accessModes:
-    - ReadWriteMany
-  nfs:
-    path: /data/hdd1/nfs_data/guohuanyang/kubernetes
-    server: 172.26.22.48
-    
-```
-
-```
-# /etc/network/interface
-auto lo
-iface lo inet loopback
-auto enp2s0
-iface enp2s0 inet static
-address 172.25.22.10
-netmask 255.255.255.0
-gateway 172.25.22.1
-dns1 61.139.2.69
-dns2 114.114.114.114
 ```
 
 ```

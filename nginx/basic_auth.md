@@ -17,3 +17,4 @@ annotations:
     nginx.ingress.kubernetes.io/auth-type: basic
     nginx.ingress.kubernetes.io/auth-secret: vmlogs-auth
     nginx.ingress.kubernetes.io/auth-realm: "Authentication Required"
+
