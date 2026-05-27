@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: alb-gateway
+  namespace: kube-system
+spec:
+  gatewayClassName: aws-alb
+  infrastructure:
+    parametersRef:
+      kind: LoadBalancerConfiguration
+      name: test-gw-lbconfig-1
+      group: gateway.k8s.aws
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All

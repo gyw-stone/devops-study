@@ -1,0 +1,12 @@
+apiVersion: gateway.k8s.aws/v1beta1
+kind: LoadBalancerConfiguration
+metadata:
+  name: test-gw-lbconfig-1
+  namespace: kube-system
+spec:
+  scheme: internet-facing
+  loadBalancerSubnets:
+    - identifier: subnet-09a146a215b5a1c7f
+    - identifier: subnet-08015fbb81ad35c74
+  listenerConfigurations:
+    - protocolPort: HTTP:80

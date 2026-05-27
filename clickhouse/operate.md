@@ -81,3 +81,13 @@ RESTORE DATABASE default
 FROM Disk('backups', 'default_backup.zip')
 SETTINGS storage_policy='hot_to_cold';
 select storage_policy,name,engine,engine_full from system.tables where database='default' and name='t_fee_bills';
+
+12.查询正在执行的查询及其 CPU 使用率，按照用户 CPU 使用率倒序排列
+SELECT
+    query_id,
+    query,
+    elapsed,
+    ProfileEvents['UserTimeMicroseconds'] AS userCPU,
+    ProfileEvents['SystemTimeMicroseconds'] AS systemCPU
+FROM system.processes
+ORDER BY userCPU DESC;

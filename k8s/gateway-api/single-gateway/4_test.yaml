@@ -1,0 +1,64 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: aws-alb
+spec:
+  controllerName: gateway.k8s.aws/alb
+root@CC-drone-aws-pro:/usr/local/src/k8s-eks-test/yaml/gateway# cat test_deployment.yaml 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-test
+  template:
+    metadata:
+      labels:
+        app: nginx-test
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-test-svc
+  namespace: monitoring
+spec:
+  # 使用 NodePort 以满足 AWS LBC 的 Gateway API 校验要求
+  type: NodePort 
+  selector:
+    app: nginx-test
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: test-httproute
+  namespace: monitoring
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: alb-gateway
+      namespace: kube-system
+      sectionName: http
+  hostnames:
+    - "nginxtest.cctip.group"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+    - backendRefs:
+        - name: nginx-test-svc
+          port: 80
