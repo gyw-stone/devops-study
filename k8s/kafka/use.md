@@ -86,3 +86,13 @@ bin/kafka-configs.sh --bootstrap-server localhost:9092 \
   --entity-name stats.cctip-db-stats.cctip-user-asset-statistic-usdt \
   --alter \
   --add-config retention.bytes=$((30*1024*1024*1024))
+
+16.操作 kafka 消费者组
+# 描述组
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group <group>
+# 重置消费到最新
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --reset-offsets --group <group> --topic <topic> --to-latest --execute
+# 查看消费者组状态
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group <group> --state
+# 删除消费者组
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --delete --group my-group --group my-other-group
