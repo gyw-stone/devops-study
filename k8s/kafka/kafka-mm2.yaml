@@ -1,0 +1,79 @@
+# standalone-mirror-maker.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-mirrormaker-standalone
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mirrormaker
+  template:
+    metadata:
+      labels:
+        app: mirrormaker
+    spec:
+      containers:
+      - name: mirrormaker
+        image: confluentinc/cp-kafka:7.4.0
+        command:
+        - bash
+        - -c
+        - |
+          # 等待两个集群都就绪
+          echo "检查源集群连接..."
+          until kafka-topics --bootstrap-server kafka-broker-0.kafka-broker-headless.middleware.svc.cluster.local:9092 --list > /dev/null 2>&1; do
+            sleep 5
+          done
+          
+          echo "检查目标集群连接..."
+          until kafka-topics --bootstrap-server 172.17.4.220:9092 --list > /dev/null 2>&1; do
+            sleep 5
+          done
+          
+          echo "开始创建目标 topic..."
+          for topic in schema-changes.cwallet; do
+            kafka-topics --bootstrap-server 172.17.4.220:9092 \
+              --create --topic $topic \
+              --partitions 1 --replication-factor 1 2>/dev/null || \
+              echo "Topic $topic 已存在"
+          done
+          
+          echo "启动 MirrorMaker 复制..."
+          # 使用 kafka-mirror-maker.sh
+          /usr/bin/kafka-mirror-maker \
+            --consumer.config /tmp/consumer.properties \
+            --producer.config /tmp/producer.properties \
+            --whitelist "schema-changes.cwallet" \
+            --num.streams 1
+        env:
+        - name: SOURCE_KAFKA
+          value: "kafka-broker-0.kafka-broker-headless.middleware.svc.cluster.local:9092"
+        - name: TARGET_KAFKA
+          value: "ip:9092"
+        volumeMounts:
+        - name: config
+          mountPath: /tmp
+      volumes:
+      - name: config
+        configMap:
+          name: mm2-standalone-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mm2-standalone-config
+  namespace: test
+data:
+  consumer.properties: |
+    bootstrap.servers=kafka-broker-0.kafka-broker-headless.middleware.svc.cluster.local:9092
+    group.id=mirror-maker-group
+    auto.offset.reset=earliest
+    enable.auto.commit=false
+  producer.properties: |
+    bootstrap.servers=ip:9092
+    acks=all
+    compression.type=snappy
+    linger.ms=100
+    batch.size=32768
